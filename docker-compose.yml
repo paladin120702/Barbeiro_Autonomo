@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: barbearia-db
+    environment:
+      POSTGRES_DB: barbearia
+      POSTGRES_USER: barbearia
+      POSTGRES_PASSWORD: barbearia
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

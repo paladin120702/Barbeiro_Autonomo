@@ -1,0 +1,7 @@
+backend/target/
+node_modules/
+build/
+.idea/
+.vscode/
+*.iml
+.env
