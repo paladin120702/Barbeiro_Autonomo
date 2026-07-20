@@ -37,6 +37,17 @@ class MigrationConstraintTest extends IntegrationTestBase {
             """, barbeiroId, clienteId, servicoId, inicio, inicio, status);
     }
 
+    private void inserir(String inicio, String fim, String status) {
+        inserir(barbeiroId, clienteId, servicoId, inicio, fim, status);
+    }
+
+    private void inserir(Long barbeiro, Long cliente, Long servico, String inicio, String fim, String status) {
+        jdbc.update("""
+            INSERT INTO agendamentos (barbeiro_id, cliente_id, servico_id, data_hora_inicio, data_hora_fim, status)
+            VALUES (?, ?, ?, ?::timestamp, ?::timestamp, ?)
+            """, barbeiro, cliente, servico, inicio, fim, status);
+    }
+
     @Test
     void constraintBloqueiaSobreposicaoDeAgendamentosAtivos() {
         inserir("2026-08-03 09:00", "AGENDADO");
@@ -49,6 +60,42 @@ class MigrationConstraintTest extends IntegrationTestBase {
         inserir("2026-08-03 09:00", "CANCELADO");
         inserir("2026-08-03 09:00", "NAO_COMPARECEU");
         assertThatCode(() -> inserir("2026-08-03 09:00", "AGENDADO"))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void constraintPermiteAgendamentosAdjacentes() {
+        inserir("2026-08-03 09:00", "2026-08-03 10:00", "AGENDADO");
+        assertThatCode(() -> inserir("2026-08-03 10:00", "2026-08-03 11:00", "AGENDADO"))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void constraintBloqueiaSobreposicaoParcial() {
+        inserir("2026-08-03 09:00", "2026-08-03 10:30", "AGENDADO");
+        assertThatThrownBy(() -> inserir("2026-08-03 10:00", "2026-08-03 11:00", "AGENDADO"))
+            .hasMessageContaining("sem_sobreposicao");
+    }
+
+    @Test
+    void constraintBloqueiaAgendamentoContidoEmOutro() {
+        inserir("2026-08-03 09:00", "2026-08-03 11:00", "AGENDADO");
+        assertThatThrownBy(() -> inserir("2026-08-03 09:30", "2026-08-03 10:30", "AGENDADO"))
+            .hasMessageContaining("sem_sobreposicao");
+    }
+
+    @Test
+    void constraintPermiteMesmoHorarioParaBarbeirosDiferentes() {
+        Long outroBarbeiroId = jdbc.queryForObject(
+            "INSERT INTO barbeiros (nome, email, senha, slug) VALUES ('B2', 'b2@b.com', 'x', 'b2') RETURNING id", Long.class);
+        Long outroClienteId = jdbc.queryForObject(
+            "INSERT INTO clientes (barbeiro_id, nome, telefone) VALUES (?, 'C2', '11988888888') RETURNING id", Long.class, outroBarbeiroId);
+        Long outroServicoId = jdbc.queryForObject(
+            "INSERT INTO servicos (barbeiro_id, nome, preco) VALUES (?, 'Barba', 40) RETURNING id", Long.class, outroBarbeiroId);
+
+        inserir("2026-08-03 09:00", "2026-08-03 10:00", "AGENDADO");
+        assertThatCode(() -> inserir(outroBarbeiroId, outroClienteId, outroServicoId,
+                "2026-08-03 09:00", "2026-08-03 10:00", "AGENDADO"))
             .doesNotThrowAnyException();
     }
 }
