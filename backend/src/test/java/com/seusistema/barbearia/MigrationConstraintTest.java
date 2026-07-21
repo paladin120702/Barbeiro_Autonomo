@@ -10,18 +10,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 class MigrationConstraintTest extends IntegrationTestBase {
 
-    @Autowired JdbcTemplate jdbc;
-
     Long barbeiroId;
     Long clienteId;
     Long servicoId;
 
+    // A limpeza vem do @BeforeEach de IntegrationTestBase, que roda antes deste.
     @BeforeEach
     void setUp() {
-        jdbc.update("DELETE FROM agendamentos");
-        jdbc.update("DELETE FROM clientes");
-        jdbc.update("DELETE FROM servicos");
-        jdbc.update("DELETE FROM barbeiros");
         barbeiroId = jdbc.queryForObject(
             "INSERT INTO barbeiros (nome, email, senha, slug) VALUES ('B', 'b@b.com', 'x', 'b') RETURNING id", Long.class);
         clienteId = jdbc.queryForObject(

@@ -1,6 +1,9 @@
 package com.seusistema.barbearia;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -15,6 +18,19 @@ public abstract class IntegrationTestBase {
 
     static {
         POSTGRES.start();
+    }
+
+    @Autowired protected JdbcTemplate jdbc;
+
+    // O container é estático e compartilhado por toda a suíte, então a limpeza é
+    // propriedade da base, não de cada teste. CASCADE dispensa ordem, para que
+    // acrescentar tabela depois não quebre em silêncio.
+    @BeforeEach
+    void limparBanco() {
+        jdbc.update("""
+            TRUNCATE agendamentos, excecoes_horario, horario_funcionamento,
+                     clientes, servicos, barbeiros RESTART IDENTITY CASCADE
+            """);
     }
 
     @DynamicPropertySource

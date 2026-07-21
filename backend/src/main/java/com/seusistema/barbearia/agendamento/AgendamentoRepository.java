@@ -7,11 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> {
 
-    List<Agendamento> findByBarbeiroIdAndDataHoraInicioBetweenOrderByDataHoraInicio(
-            Long id, LocalDateTime ini, LocalDateTime fim);
+    // Range half-open [ini, fimExclusivo), espelhando o tsrange [) da constraint
+    // sem_sobreposicao. Between seria inclusivo nas duas pontas e casaria com um
+    // agendamento no limite superior.
+    List<Agendamento> findByBarbeiroIdAndDataHoraInicioGreaterThanEqualAndDataHoraInicioLessThanOrderByDataHoraInicio(
+            Long id, LocalDateTime ini, LocalDateTime fimExclusivo);
 
     Optional<Agendamento> findByIdAndBarbeiroId(Long id, Long barbeiroId);
 
-    List<Agendamento> findByBarbeiroIdAndStatusAndDataHoraInicioBetween(
-            Long id, StatusAgendamento status, LocalDateTime ini, LocalDateTime fim);
+    List<Agendamento> findByBarbeiroIdAndStatusAndDataHoraInicioGreaterThanEqualAndDataHoraInicioLessThan(
+            Long id, StatusAgendamento status, LocalDateTime ini, LocalDateTime fimExclusivo);
 }

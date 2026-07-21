@@ -390,7 +390,8 @@ Remover o workaround de location vazia da Task 1, se usado.
   - `ClienteRepository`: `Optional<Cliente> findByBarbeiroIdAndTelefone(Long barbeiroId, String telefone)`
   - `HorarioFuncionamentoRepository`: `List<HorarioFuncionamento> findByBarbeiroId(Long id)`, `List<HorarioFuncionamento> findByBarbeiroIdAndDiaSemanaAndAtivoTrue(Long id, int diaSemana)`, `Optional<HorarioFuncionamento> findByIdAndBarbeiroId(Long id, Long barbeiroId)`
   - `ExcecaoHorarioRepository`: `List<ExcecaoHorario> findByBarbeiroId(Long id)`, `Optional<ExcecaoHorario> findByBarbeiroIdAndData(Long id, LocalDate data)`, `Optional<ExcecaoHorario> findByIdAndBarbeiroId(Long id, Long barbeiroId)`
-  - `AgendamentoRepository`: `List<Agendamento> findByBarbeiroIdAndDataHoraInicioBetweenOrderByDataHoraInicio(Long id, LocalDateTime ini, LocalDateTime fim)`, `Optional<Agendamento> findByIdAndBarbeiroId(Long id, Long barbeiroId)`, `List<Agendamento> findByBarbeiroIdAndStatusAndDataHoraInicioBetween(Long id, StatusAgendamento status, LocalDateTime ini, LocalDateTime fim)`
+  - `AgendamentoRepository`: `List<Agendamento> findByBarbeiroIdAndDataHoraInicioGreaterThanEqualAndDataHoraInicioLessThanOrderByDataHoraInicio(Long id, LocalDateTime ini, LocalDateTime fimExclusivo)`, `Optional<Agendamento> findByIdAndBarbeiroId(Long id, Long barbeiroId)`, `List<Agendamento> findByBarbeiroIdAndStatusAndDataHoraInicioGreaterThanEqualAndDataHoraInicioLessThan(Long id, StatusAgendamento status, LocalDateTime ini, LocalDateTime fimExclusivo)`
+  - **Regra:** toda query de range de tempo é half-open `[ini, fim)`, espelhando o `tsrange [)` da constraint `sem_sobreposicao`. Nunca usar `Between` (inclusivo nas duas pontas) nem `LocalTime.MAX` como limite.
 
 - [ ] **Step 1: Teste falhando** — `EntidadesMapeamentoTest extends IntegrationTestBase`: salva um `Barbeiro`, um `Servico`, um `Cliente` e um `Agendamento` via repositories e relê; verifica `dataHoraFim == inicio.plusHours(1)` (o `@PrePersist`):
 
@@ -1397,8 +1398,8 @@ public class DisponibilidadeService {
         }
 
         Set<LocalTime> ocupados = agendamentos
-            .findByBarbeiroIdAndDataHoraInicioBetweenOrderByDataHoraInicio(
-                barbeiroId, data.atStartOfDay(), data.atTime(LocalTime.MAX))
+            .findByBarbeiroIdAndDataHoraInicioGreaterThanEqualAndDataHoraInicioLessThanOrderByDataHoraInicio(
+                barbeiroId, data.atStartOfDay(), data.plusDays(1).atStartOfDay())
             .stream()
             .filter(a -> a.getStatus() == StatusAgendamento.AGENDADO
                       || a.getStatus() == StatusAgendamento.CONCLUIDO)
@@ -1632,7 +1633,7 @@ public AgendamentoCriadoDTO criar(@PathVariable String slug,
   - `FinalizarRequest(FormaPagamento formaPagamento)` — `@NotNull`.
   - `CancelarRequest(StatusAgendamento status)` — `@NotNull`; service aceita apenas `CANCELADO` ou `NAO_COMPARECEU`, senão `RegraDeNegocioException("Status de cancelamento inválido")`.
   - Novos métodos no `AgendamentoService` (todos escopados por `findByIdAndBarbeiroId`, 404 se não achar):
-    - `List<AgendamentoDTO> listarDia(Long barbeiroId, LocalDate data)` — ordenado por início; entidades com `JOIN FETCH` de cliente/serviço (query `@Query` no repository: `SELECT a FROM Agendamento a JOIN FETCH a.cliente JOIN FETCH a.servico WHERE a.barbeiroId = :barbeiroId AND a.dataHoraInicio BETWEEN :ini AND :fim ORDER BY a.dataHoraInicio`) para evitar N+1/lazy na montagem do DTO.
+    - `List<AgendamentoDTO> listarDia(Long barbeiroId, LocalDate data)` — ordenado por início; entidades com `JOIN FETCH` de cliente/serviço (query `@Query` no repository: `SELECT a FROM Agendamento a JOIN FETCH a.cliente JOIN FETCH a.servico WHERE a.barbeiroId = :barbeiroId AND a.dataHoraInicio >= :ini AND a.dataHoraInicio < :fim ORDER BY a.dataHoraInicio`, com `fim` exclusivo = `data.plusDays(1).atStartOfDay()`) para evitar N+1/lazy na montagem do DTO.
     - `AgendamentoDTO finalizar(Long barbeiroId, Long id, FinalizarRequest req)` — só de `AGENDADO` (senão `RegraDeNegocioException("Agendamento não pode ser finalizado")`); seta `CONCLUIDO` + forma.
     - `AgendamentoDTO cancelar(Long barbeiroId, Long id, CancelarRequest req)` — só de `AGENDADO` (senão `"Agendamento não pode ser cancelado"`); seta o status pedido; `forma_pagamento` permanece null.
 - Endpoints: `GET /api/v1/app/agendamentos?data=2026-08-03` → 200 lista; `POST /api/v1/app/agendamentos/{id}/finalizar` → 200; `POST /api/v1/app/agendamentos/{id}/cancelar` → 200.
@@ -1706,7 +1707,7 @@ Métodos do service com `@Transactional`; mapeamento entidade → `AgendamentoDT
 - Test: `backend/src/test/java/com/seusistema/barbearia/caixa/CaixaIT.java`
 
 **Interfaces:**
-- Consumes: `AgendamentoRepository.findByBarbeiroIdAndStatusAndDataHoraInicioBetween` (Task 3); `FormaPagamento` (Task 3).
+- Consumes: `AgendamentoRepository.findByBarbeiroIdAndStatusAndDataHoraInicioGreaterThanEqualAndDataHoraInicioLessThan` (Task 3); `FormaPagamento` (Task 3).
 - Produces: `CaixaDTO(BigDecimal total, int quantidade, Map<FormaPagamento, BigDecimal> porFormaPagamento)` — mapa sempre com as 4 formas (ausentes = `BigDecimal.ZERO`, usar `EnumMap` para ordem estável). `CaixaService.consultar(Long barbeiroId, String periodo, String data)`:
   - `periodo="dia"` + `data=2026-07-18` → intervalo do dia; `periodo="mes"` + `data=2026-07` → primeiro a último dia do mês (`YearMonth.parse`).
   - Outro `periodo` ou `data` malformada → `RegraDeNegocioException("Período inválido")`.
@@ -1755,11 +1756,11 @@ public class CaixaService {
             if ("dia".equals(periodo)) {
                 LocalDate dia = LocalDate.parse(data);
                 inicio = dia.atStartOfDay();
-                fim = dia.atTime(LocalTime.MAX);
+                fim = dia.plusDays(1).atStartOfDay();   // exclusivo
             } else if ("mes".equals(periodo)) {
                 YearMonth mes = YearMonth.parse(data);
                 inicio = mes.atDay(1).atStartOfDay();
-                fim = mes.atEndOfMonth().atTime(LocalTime.MAX);
+                fim = mes.plusMonths(1).atDay(1).atStartOfDay();   // exclusivo
             } else {
                 throw new RegraDeNegocioException("Período inválido");
             }
@@ -1768,8 +1769,8 @@ public class CaixaService {
         }
 
         List<Agendamento> concluidos = agendamentos
-            .findByBarbeiroIdAndStatusAndDataHoraInicioBetween(
-                barbeiroId, StatusAgendamento.CONCLUIDO, inicio, fim);
+            .findByBarbeiroIdAndStatusAndDataHoraInicioGreaterThanEqualAndDataHoraInicioLessThan(
+                barbeiroId, StatusAgendamento.CONCLUIDO, inicio, fim);   // fim exclusivo
 
         Map<FormaPagamento, BigDecimal> porForma = new EnumMap<>(FormaPagamento.class);
         for (FormaPagamento f : FormaPagamento.values()) {

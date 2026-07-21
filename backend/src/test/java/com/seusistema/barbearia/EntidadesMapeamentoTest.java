@@ -8,10 +8,8 @@ import com.seusistema.barbearia.cliente.*;
 import com.seusistema.barbearia.servico.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 class EntidadesMapeamentoTest extends IntegrationTestBase {
 
@@ -19,15 +17,8 @@ class EntidadesMapeamentoTest extends IntegrationTestBase {
     @Autowired ServicoRepository servicos;
     @Autowired ClienteRepository clientes;
     @Autowired AgendamentoRepository agendamentos;
-    @Autowired JdbcTemplate jdbc;
 
-    @BeforeEach
-    void setUp() {
-        jdbc.update("DELETE FROM agendamentos");
-        jdbc.update("DELETE FROM clientes");
-        jdbc.update("DELETE FROM servicos");
-        jdbc.update("DELETE FROM barbeiros");
-    }
+    // A limpeza vem do @BeforeEach de IntegrationTestBase.
 
     @Test
     void persisteGrafoCompletoECalculaFimNoPrePersist() {
