@@ -527,9 +527,11 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void outraViolacaoDeIntegridadeEhRelancada() {
+    void outraViolacaoDeIntegridadeVira500Generico() {
         var ex = new DataIntegrityViolationException("violates unique constraint \"barbeiros_email_key\"");
-        assertThatThrownBy(() -> handler.handleConflito(ex)).isSameAs(ex);
+        var resp = handler.handleConflito(ex);
+        assertThat(resp.getStatusCode().value()).isEqualTo(500);
+        assertThat(resp.getBody()).containsEntry("erro", "Erro inesperado. Tente novamente.");
     }
 
     @Test
@@ -574,6 +576,9 @@ package com.seusistema.barbearia.common.exception;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -584,24 +589,44 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    static final String ERRO_GENERICO = "Erro inesperado. Tente novamente.";
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConflito(DataIntegrityViolationException ex) {
         String msg = ex.getMessage() == null ? "" : ex.getMessage();
-        if (msg.contains("sem_sobreposicao")) {
+        // Ancorado no texto completo: o nome da constraint sozinho também aparece
+        // no SQL e no Detail: da mensagem, com valores vindos do cliente.
+        if (msg.contains("exclusion constraint \"sem_sobreposicao\"")) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("erro", "Esse horário acabou de ser reservado. Escolha outro."));
         }
-        throw ex;
+        // NÃO relançar: exceção relançada de dentro de um @ExceptionHandler escapa do
+        // DispatcherServlet sem passar pelo catch-all (o resolver devolve null quando
+        // invocationEx == exception), e o cliente recebe corpo sem a chave "erro".
+        return handleInesperado(ex);
     }
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)
     public ResponseEntity<Map<String, Object>> handleNaoEncontrado(RecursoNaoEncontradoException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("erro", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(Map.of("erro", Objects.requireNonNullElse(ex.getMessage(), "Recurso não encontrado")));
     }
 
     @ExceptionHandler(RegraDeNegocioException.class)
     public ResponseEntity<Map<String, Object>> handleRegra(RegraDeNegocioException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("erro", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(Map.of("erro", Objects.requireNonNullElse(ex.getMessage(), ERRO_GENERICO)));
+    }
+
+    // Catch-all: sem ele, exceção não mapeada cai no corpo padrão do Boot
+    // ({"timestamp","status","error","path"}), que é JSON válido mas não tem "erro".
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleInesperado(Exception ex) {
+        log.error("Erro não tratado", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(Map.of("erro", ERRO_GENERICO));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -1934,8 +1959,15 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   });
   if (!response.ok) {
+    // Checar a CHAVE `erro`, não a parseabilidade: o corpo de erro padrão do Boot
+    // ({"timestamp","status","error","path"}) é JSON válido e sobrescreveria o
+    // fallback, deixando body.erro undefined. O backend tem catch-all garantindo
+    // `erro` em toda resposta tratada, mas o guard não depende disso.
     let body: ErroAPI = { erro: 'Erro inesperado. Tente novamente.' };
-    try { body = await response.json(); } catch { /* corpo não-JSON */ }
+    try {
+      const json = await response.json();
+      if (json && typeof json.erro === 'string') body = json;
+    } catch { /* corpo não-JSON */ }
     throw new ApiError(response.status, body);
   }
   return response.json() as Promise<T>;
