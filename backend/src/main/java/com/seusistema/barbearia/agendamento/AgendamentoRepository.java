@@ -17,4 +17,6 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
 
     List<Agendamento> findByBarbeiroIdAndStatusAndDataHoraInicioGreaterThanEqualAndDataHoraInicioLessThan(
             Long id, StatusAgendamento status, LocalDateTime ini, LocalDateTime fimExclusivo);
+
+    boolean existsByServicoId(Long servicoId);
 }
