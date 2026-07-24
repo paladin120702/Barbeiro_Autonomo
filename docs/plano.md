@@ -653,7 +653,7 @@ public class GlobalExceptionHandler {
 **Files:**
 - Create: `backend/src/main/java/com/seusistema/barbearia/security/JwtService.java`, `security/JwtAuthFilter.java`, `config/SecurityConfig.java`, `config/CorsConfig.java`, `barbeiro/BarbeiroService.java`, `barbeiro/BarbeiroController.java`, `barbeiro/dto/LoginRequest.java`, `barbeiro/dto/LoginResponse.java`, `barbeiro/dto/CriarBarbeiroRequest.java`, `config/CriarBarbeiroRunner.java`, `backend/src/main/resources/db/dev/R__seed_dev.sql`
 - Modify: `common/exception/GlobalExceptionHandler.java` (handler de `BadCredentialsException`)
-- Test: `backend/src/test/java/com/seusistema/barbearia/barbeiro/BarbeiroServiceTest.java`, `backend/src/test/java/com/seusistema/barbearia/security/AutenticacaoIT.java`
+- Test: `backend/src/test/java/com/seusistema/barbearia/barbeiro/BarbeiroServiceTest.java`, `backend/src/test/java/com/seusistema/barbearia/security/AutenticacaoTest.java`
 
 **Interfaces:**
 - Consumes: `RegraDeNegocioException`, `RecursoNaoEncontradoException`, `GlobalExceptionHandler` (Task 4); `BarbeiroRepository` (Task 3).
@@ -728,7 +728,7 @@ class BarbeiroServiceTest extends IntegrationTestBase {
 
 Nota: o `@BeforeEach` de limpeza total de tabelas se repete em todos os testes de integração — extrair para método `protected void limparBanco()` na `IntegrationTestBase` (com `@Autowired JdbcTemplate` lá) e chamar dos `@BeforeEach`. Fazer isso já nesta task e refatorar `MigrationConstraintTest`/`EntidadesMapeamentoTest` para usar.
 
-- [ ] **Step 2: Teste de autenticação falhando** — `AutenticacaoIT` com `TestRestTemplate`:
+- [ ] **Step 2: Teste de autenticação falhando** — `AutenticacaoTest` com `TestRestTemplate` (sufixo `Test`, não `IT`: o Surefire da fase `test` só coleta `*Test`/`*Tests`/`*TestCase`; `*IT` seria do Failsafe, que não está no pom, e a suíte inteira roda por `./mvnw test`):
 
 ```java
 package com.seusistema.barbearia.security;
@@ -745,7 +745,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 
-class AutenticacaoIT extends IntegrationTestBase {
+class AutenticacaoTest extends IntegrationTestBase {
 
     @Autowired TestRestTemplate rest;
     @Autowired BarbeiroService barbeiroService;
@@ -795,7 +795,7 @@ class AutenticacaoIT extends IntegrationTestBase {
 
 Nota: `GET /app/agendamentos` e `GET /public/{slug}` ainda não existem — 404/403 autenticado é aceitável aqui (asserts usam `isNotEqualTo(UNAUTHORIZED)`).
 
-- [ ] **Step 3: Rodar os dois** — `./mvnw -q test -Dtest='BarbeiroServiceTest,AutenticacaoIT'`. Esperado: FAIL (não compila).
+- [ ] **Step 3: Rodar os dois** — `./mvnw -q test -Dtest='BarbeiroServiceTest,AutenticacaoTest'`. Esperado: FAIL (não compila).
 
 - [ ] **Step 4: Implementar.** `JwtService`:
 
@@ -1083,7 +1083,7 @@ VALUES ('Barbeiro Dev', 'dev@barbearia.local', '<HASH_BCRYPT_DE_senha123>', 'bar
 ON CONFLICT (email) DO NOTHING;
 ```
 
-- [ ] **Step 5: Rodar** — `./mvnw -q test -Dtest='BarbeiroServiceTest,AutenticacaoIT'`. Esperado: PASS. Rodar suíte completa (`./mvnw -q test`) para garantir que nada quebrou.
+- [ ] **Step 5: Rodar** — `./mvnw -q test -Dtest='BarbeiroServiceTest,AutenticacaoTest'`. Esperado: PASS. Rodar suíte completa (`./mvnw -q test`) para garantir que nada quebrou.
 
 - [ ] **Step 6: Commit** — `git add -A && git commit -m "feat(backend): JWT, login, BarbeiroService.criar, CLI admin e seed dev"`
 
