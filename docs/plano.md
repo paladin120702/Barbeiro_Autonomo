@@ -1358,7 +1358,7 @@ public class HorarioController {
 
 **Files:**
 - Create: `backend/src/main/java/com/seusistema/barbearia/agendamento/DisponibilidadeService.java`, `agendamento/AgendamentoPublicoController.java` (só o GET nesta task), `agendamento/dto/DisponibilidadeDTO.java`, `config/ClockConfig.java`
-- Test: `backend/src/test/java/com/seusistema/barbearia/agendamento/DisponibilidadeIT.java`
+- Test: `backend/src/test/java/com/seusistema/barbearia/agendamento/DisponibilidadeTest.java`
 
 **Interfaces:**
 - Consumes: `BarbeiroService.buscarAtivoPorSlug` (Task 5); repositories de horário/exceção/agendamento (Task 3).
@@ -1373,7 +1373,7 @@ public class HorarioController {
   - `DisponibilidadeDTO(LocalDate data, List<String> horarios)` — horários formato `"HH:mm"`.
 - Endpoint: `GET /api/v1/public/{slug}/disponibilidade?data=2026-08-03` → 200 `DisponibilidadeDTO` | 404 slug/INATIVO | 400 se `data` ausente/malformada ou fora da janela (passado ou > 30 dias → `RegraDeNegocioException("Data fora do período de agendamento")`).
 
-- [ ] **Step 1: Teste falhando** — `DisponibilidadeIT extends IntegrationTestBase` com `Clock` fixado (registrar `@TestConfiguration` interna com `@Bean @Primary Clock clock()` retornando `Clock.fixed` em `2026-08-03T10:30` America/Sao_Paulo — segunda-feira). Montar barbeiro com horário seg 09:00–18:00. Casos (via HTTP no endpoint público):
+- [ ] **Step 1: Teste falhando** — `DisponibilidadeTest extends IntegrationTestBase` com `Clock` fixado (registrar `@TestConfiguration` interna com `@Bean @Primary Clock clockDeTeste()` retornando `Clock.fixed` em `2026-08-03T10:30` America/Sao_Paulo — segunda-feira; **nome do método não pode ser `clock()`** — colidiria com o bean `clock()` do `ClockConfig` de produção e o Spring Boot 3.4 rejeita com `BeanDefinitionOverrideException` antes mesmo do `@Primary` desempatar). Montar barbeiro com horário seg 09:00–18:00. Casos (via HTTP no endpoint público):
   - Dia futuro sem agendamentos → slots 09:00…17:00 (9 slots).
   - Com agendamento AGENDADO às 14:00 → 14:00 some; CANCELADO às 15:00 → 15:00 continua.
   - Exceção folga na data → lista vazia.
@@ -1384,7 +1384,7 @@ public class HorarioController {
   - Slug inexistente → 404.
   - Janela quebrada 09:30–12:30 → slots 10:00 e 11:00 (09:30 arredonda para 10:00; 12:00 não entra pois terminaria 13:00, depois de 12:30).
 
-- [ ] **Step 2: Rodar** — `./mvnw -q test -Dtest=DisponibilidadeIT`. Esperado: FAIL.
+- [ ] **Step 2: Rodar** — `./mvnw -q test -Dtest=DisponibilidadeTest`. Esperado: FAIL.
 
 - [ ] **Step 3: Implementar:**
 
@@ -1453,7 +1453,9 @@ public class DisponibilidadeService {
             if (!e.isDisponivel()) {
                 return List.of();
             }
-            return List.of(new LocalTime[]{e.getHoraInicio(), e.getHoraFim()});
+            // List.of(E) vs List.of(E...) são ambíguos para um array cru — o type
+            // witness força E=LocalTime[] (lista de UM elemento, a janela).
+            return List.<LocalTime[]>of(new LocalTime[]{e.getHoraInicio(), e.getHoraFim()});
         }
         int diaSemana = data.getDayOfWeek().getValue() % 7;
         return horarios.findByBarbeiroIdAndDiaSemanaAndAtivoTrue(barbeiroId, diaSemana).stream()
