@@ -1256,7 +1256,7 @@ Métodos novos do `ServicoService` seguem o padrão: buscar com `findByIdAndBarb
 
 **Files:**
 - Create: `backend/src/main/java/com/seusistema/barbearia/horario/HorarioService.java`, `horario/HorarioController.java`, `horario/dto/HorarioFuncionamentoDTO.java`, `horario/dto/SalvarHorarioRequest.java`, `horario/dto/ExcecaoHorarioDTO.java`, `horario/dto/SalvarExcecaoRequest.java`
-- Test: `backend/src/test/java/com/seusistema/barbearia/horario/HorarioCrudIT.java`
+- Test: `backend/src/test/java/com/seusistema/barbearia/horario/HorarioCrudTest.java`
 
 **Interfaces:**
 - Consumes: `HorarioFuncionamentoRepository`, `ExcecaoHorarioRepository` (Task 3); `authHeaders` da `IntegrationTestBase` (Task 7).
@@ -1266,9 +1266,9 @@ Métodos novos do `ServicoService` seguem o padrão: buscar com `findByIdAndBarb
   - `ExcecaoHorarioDTO(Long id, LocalDate data, Boolean disponivel, LocalTime horaInicio, LocalTime horaFim)`
   - `SalvarExcecaoRequest(LocalDate data, Boolean disponivel, LocalTime horaInicio, LocalTime horaFim)` — `@NotNull` data; `disponivel` null vira false; se `disponivel=true`, horas obrigatórias e `horaInicio < horaFim`; se `disponivel=false`, horas ignoradas (gravar null). Data duplicada para o barbeiro → `RegraDeNegocioException("Já existe exceção para esta data")`.
   - `HorarioService`: `listarHorarios(Long barbeiroId)`, `criarHorario(Long barbeiroId, SalvarHorarioRequest)`, `atualizarHorario(Long barbeiroId, Long id, SalvarHorarioRequest)`, `excluirHorario(Long barbeiroId, Long id)`, `listarExcecoes(Long barbeiroId)`, `criarExcecao(Long barbeiroId, SalvarExcecaoRequest)`, `excluirExcecao(Long barbeiroId, Long id)`. Não encontrado → `RecursoNaoEncontradoException`.
-- Endpoints: `GET|POST /api/v1/app/horarios`, `PUT|DELETE /api/v1/app/horarios/{id}`, `GET|POST /api/v1/app/horarios/excecoes`, `DELETE /api/v1/app/horarios/excecoes/{id}`. **Atenção à ordem dos mappings**: `/horarios/excecoes` não pode colidir com `/horarios/{id}` — usar dois `@RequestMapping` distintos no mesmo controller (`/api/v1/app/horarios` e path literal `excecoes` declarado antes) ou métodos com paths explícitos; Spring resolve literal antes de variável, então basta declarar `@GetMapping("/excecoes")` e `@PutMapping("/{id}")` no mesmo controller.
+- Endpoints: `GET|POST /api/v1/app/horarios`, `PUT|DELETE /api/v1/app/horarios/{id}`, `GET|POST /api/v1/app/horarios/excecoes`, `DELETE /api/v1/app/horarios/excecoes/{id}`. **Atenção à ordem dos mappings**: `/horarios/excecoes` não pode colidir com `/horarios/{id}` — usar métodos com paths explícitos no mesmo controller: `@GetMapping("/excecoes")`/`@PostMapping("/excecoes")`/`@DeleteMapping("/excecoes/{id}")` ao lado de `@PutMapping("/{id}")`/`@DeleteMapping("/{id}")`. Spring resolve o path literal (`excecoes`) antes do path variável (`{id}`) independente da ordem de declaração no código.
 
-- [ ] **Step 1: Teste falhando** — `HorarioCrudIT extends IntegrationTestBase` (limpa banco, cria barbeiro, login). Casos:
+- [ ] **Step 1: Teste falhando** — `HorarioCrudTest extends IntegrationTestBase` (limpa banco, cria barbeiro, login). Casos:
   - POST horário {diaSemana:1, 09:00–18:00} → 201; GET lista com 1.
   - POST com diaSemana=7 → 400 com `campos.diaSemana`.
   - POST com horaInicio ≥ horaFim → 400 `{"erro": "Hora de início deve ser antes da hora de fim"}`.
@@ -1279,7 +1279,7 @@ Métodos novos do `ServicoService` seguem o padrão: buscar com `findByIdAndBarb
   - DELETE exceção → 204.
   - Escopo: operar horário de outro barbeiro → 404.
 
-- [ ] **Step 2: Rodar** — `./mvnw -q test -Dtest=HorarioCrudIT`. Esperado: FAIL.
+- [ ] **Step 2: Rodar** — `./mvnw -q test -Dtest=HorarioCrudTest`. Esperado: FAIL.
 
 - [ ] **Step 3: Implementar** `HorarioService` (validações acima, mapeamento entidade↔DTO) e `HorarioController`:
 
