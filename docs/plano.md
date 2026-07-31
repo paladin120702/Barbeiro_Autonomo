@@ -1758,7 +1758,7 @@ Métodos do service com `@Transactional`; mapeamento entidade → `AgendamentoDT
 
 **Files:**
 - Create: `backend/src/main/java/com/seusistema/barbearia/caixa/CaixaService.java`, `caixa/CaixaController.java`, `caixa/dto/CaixaDTO.java`
-- Test: `backend/src/test/java/com/seusistema/barbearia/caixa/CaixaIT.java`
+- Test: `backend/src/test/java/com/seusistema/barbearia/caixa/CaixaTest.java`
 
 **Interfaces:**
 - Consumes: `AgendamentoRepository.findByBarbeiroIdAndStatusAndDataHoraInicioGreaterThanEqualAndDataHoraInicioLessThan` (Task 3); `FormaPagamento` (Task 3).
@@ -1768,7 +1768,7 @@ Métodos do service com `@Transactional`; mapeamento entidade → `AgendamentoDT
   - Soma `servico.preco` dos agendamentos `CONCLUIDO` no intervalo, agrupado por `formaPagamento`.
 - Endpoint: `GET /api/v1/app/caixa?periodo=dia&data=2026-07-18` → 200 `CaixaDTO` | 400.
 
-- [ ] **Step 1: Teste falhando** — `CaixaIT extends IntegrationTestBase`: barbeiro + serviços de preços distintos (50.00 e 30.00); agendamentos: 2 CONCLUIDO/PIX (50+50), 1 CONCLUIDO/DINHEIRO (30), 1 AGENDADO (50), 1 CANCELADO (30), espalhados em dois dias do mesmo mês. Casos:
+- [ ] **Step 1: Teste falhando** — `CaixaTest extends IntegrationTestBase`: barbeiro + serviços de preços distintos (50.00 e 30.00); agendamentos: 2 CONCLUIDO/PIX (50+50), 1 CONCLUIDO/DINHEIRO (30), 1 AGENDADO (50), 1 CANCELADO (30), espalhados em dois dias do mesmo mês. Casos:
   - `?periodo=dia&data=<dia1>` → total/quantidade/mapa contando só os CONCLUIDO do dia 1.
   - `?periodo=mes&data=<ano-mes>` → total 130.00, quantidade 3, PIX 100.00, DINHEIRO 30.00, DEBITO 0, CREDITO 0.
   - `?periodo=semana` → 400 `{"erro": "Período inválido"}`.
