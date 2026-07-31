@@ -602,6 +602,20 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("erro", "Esse horário acabou de ser reservado. Escolha outro."));
         }
+        // Violação de UNIQUE constraint genérica: cobre o padrão find-then-save sem
+        // lock que aparece em mais de um service (ex.: ClienteService.upsert em
+        // "clientes_barbeiro_id_telefone_key", HorarioService.criarExcecao na UNIQUE
+        // de excecoes_horario) — duas requisições concorrentes com o mesmo valor
+        // nunca visto passam pelo find (nenhuma acha nada) e uma delas estoura a
+        // constraint só no save(). Texto confirmado empiricamente contra Postgres 16
+        // real (Testcontainers, Task 10 hardening): "duplicate key value violates
+        // unique constraint". Ancorado nesse prefixo (não no nome da constraint, que
+        // varia por tabela) para não alcançar violação de FK/NOT NULL/CHECK, que
+        // indicam bug real e devem continuar caindo no 500 genérico.
+        if (msg.contains("duplicate key value violates unique constraint")) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("erro", "Esse registro já existe ou acabou de ser processado. Tente novamente."));
+        }
         // NÃO relançar: exceção relançada de dentro de um @ExceptionHandler escapa do
         // DispatcherServlet sem passar pelo catch-all (o resolver devolve null quando
         // invocationEx == exception), e o cliente recebe corpo sem a chave "erro".
@@ -1530,7 +1544,7 @@ Adicionar ao `GlobalExceptionHandler` um handler de `MethodArgumentTypeMismatchE
 **Files:**
 - Create: `backend/src/main/java/com/seusistema/barbearia/agendamento/AgendamentoService.java`, `agendamento/dto/CriarAgendamentoRequest.java`, `agendamento/dto/AgendamentoCriadoDTO.java`, `cliente/ClienteService.java`, `common/validacao/TelefoneBR.java` (utilitário estático)
 - Modify: `agendamento/AgendamentoPublicoController.java` (adicionar POST)
-- Test: `backend/src/test/java/com/seusistema/barbearia/agendamento/AgendamentoPublicoIT.java`, `backend/src/test/java/com/seusistema/barbearia/agendamento/ConcorrenciaAgendamentoIT.java`
+- Test: `backend/src/test/java/com/seusistema/barbearia/agendamento/AgendamentoPublicoTest.java`, `backend/src/test/java/com/seusistema/barbearia/agendamento/ConcorrenciaAgendamentoTest.java`
 
 **Interfaces:**
 - Consumes: `DisponibilidadeService.horariosLivres` (Task 9); `ClienteRepository` (Task 3); `buscarAtivoPorSlug` (Task 5).
@@ -1540,9 +1554,9 @@ Adicionar ao `GlobalExceptionHandler` um handler de `MethodArgumentTypeMismatchE
   - `AgendamentoService.criarPublico(String slug, CriarAgendamentoRequest req)` → `AgendamentoCriadoDTO`. Validações em ordem: barbeiro ativo (404) → telefone válido (`RegraDeNegocioException("Telefone inválido")`) → serviço pertence ao barbeiro (404 `"Serviço não encontrado"`) → `dataHora` é hora cheia (`RegraDeNegocioException("Horário deve ser em hora cheia")`) → janela temporal: `dataHora > agora` e `≤ hoje+30d` (`"Data fora do período de agendamento"`) → slot está em `horariosLivres` (`"Horário indisponível"`) → upsert cliente → save (constraint pega corrida; `DataIntegrityViolationException` sobe para o handler → 409).
   - Records: `CriarAgendamentoRequest(Long servicoId, String dataHora, String nomeCliente, String telefoneCliente)` — `@NotNull` servicoId, `@NotBlank` demais; `dataHora` ISO `2026-08-03T14:00:00` parseado no service (malformado → `RegraDeNegocioException("Data/hora inválida")`); `AgendamentoCriadoDTO(Long id, String servicoNome, LocalDateTime dataHoraInicio, String nomeCliente)`.
 - Endpoint: `POST /api/v1/public/{slug}/agendamentos` → 201 `AgendamentoCriadoDTO` | 400 | 404 | 409.
-- **Transação**: `criarPublico` anotado `@Transactional`; o INSERT do agendamento é o último statement, então a violação da constraint estoura no flush/commit dentro do método e o Spring traduz para `DataIntegrityViolationException` antes da resposta.
+- **Transação**: `criarPublico` anotado `@Transactional`. **Verificado por execução** (não é "estoura no flush/commit de fim de método", como se pensava antes de rodar): `Agendamento` usa `@GeneratedValue(strategy = GenerationType.IDENTITY)`, o que obriga o Hibernate a executar o INSERT SINCRONAMENTE dentro do `save()` (precisa do ID gerado de volta) — não pode adiar pro commit. A violação da constraint já estoura dentro do `save()`, ainda dentro do método `@Transactional`, e o Spring traduz para `DataIntegrityViolationException` ali mesmo; nenhum `saveAndFlush` é necessário. Essa conclusão só vale enquanto `Agendamento` usar `IDENTITY` — se a estratégia mudar (ex.: `SEQUENCE` com batch), o INSERT pode deixar de ser síncrono e a premissa cai.
 
-- [ ] **Step 1: Teste funcional falhando** — `AgendamentoPublicoIT extends IntegrationTestBase` (Clock fixado como na Task 9; barbeiro seg 09:00–18:00, 1 serviço). Casos:
+- [ ] **Step 1: Teste funcional falhando** — `AgendamentoPublicoTest extends IntegrationTestBase` (Clock fixado como na Task 9; barbeiro seg 09:00–18:00, 1 serviço). Casos:
   - POST válido (14:00 de segunda futura) → 201; banco tem agendamento AGENDADO com fim = 15:00; cliente criado com telefone normalizado (`"(11) 98765-4321"` → `"11987654321"`).
   - Mesmo telefone com máscara diferente em segundo agendamento (outro horário) → não duplica cliente (count = 1), nome atualizado.
   - Telefone `"987654321"` (9 dígitos) → 400 `{"erro": "Telefone inválido"}`.
@@ -1552,7 +1566,7 @@ Adicionar ao `GlobalExceptionHandler` um handler de `MethodArgumentTypeMismatchE
   - `dataHora` no passado → 400.
   - Slug INATIVO → 404.
 
-- [ ] **Step 2: Teste de concorrência falhando** — `ConcorrenciaAgendamentoIT`: 2 threads com `CyclicBarrier` disparando o mesmo POST HTTP (mesmo slot, telefones diferentes) simultaneamente; exatamente uma resposta 201 e uma 409 com a mensagem amigável:
+- [ ] **Step 2: Teste de concorrência falhando** — `ConcorrenciaAgendamentoTest`: 2 threads com `CyclicBarrier` disparando o mesmo POST HTTP (mesmo slot, telefones diferentes) simultaneamente; exatamente uma resposta 201 e uma 409 com a mensagem amigável:
 
 ```java
 package com.seusistema.barbearia.agendamento;
@@ -1567,11 +1581,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 
-class ConcorrenciaAgendamentoIT extends IntegrationTestBase {
+class ConcorrenciaAgendamentoTest extends IntegrationTestBase {
 
     @Autowired TestRestTemplate rest;
 
-    // @BeforeEach monta barbeiro "joao" com horário e serviço (mesmo setup da AgendamentoPublicoIT,
+    // @BeforeEach monta barbeiro "joao" com horário e serviço (mesmo setup da AgendamentoPublicoTest,
     // extrair helper comum na própria classe de teste ou na IntegrationTestBase)
 
     @Test
@@ -1597,11 +1611,24 @@ class ConcorrenciaAgendamentoIT extends IntegrationTestBase {
             catch (Exception e) { throw new RuntimeException(e); }
         }).sorted().toList();
 
-        assertThat(statusList).containsExactly(201, 409);
-        var corpo409 = futures.stream().map(f -> {
+        // O CyclicBarrier só sincroniza o disparo do HTTP, não garante que as duas
+        // transações cheguem juntas até o INSERT: se a requisição A commitar antes da
+        // checagem de disponibilidade da B rodar, B recebe 400 "Horário indisponível"
+        // (via horariosLivres) em vez de correr até a constraint e receber 409. Ambos
+        // os desfechos previnem o double-booking corretamente — exigir sempre 409
+        // torna o teste flaky sob carga real (verificado empiricamente: falha em
+        // execução da suíte completa, nunca isoladamente rodado sozinho).
+        assertThat(statusList).hasSize(2).contains(201);
+        var respostaPerdedora = futures.stream().map(f -> {
             try { return f.get(); } catch (Exception e) { throw new RuntimeException(e); }
-        }).filter(r -> r.getStatusCode().value() == 409).findFirst().orElseThrow();
-        assertThat(corpo409.getBody()).contains("Esse horário acabou de ser reservado");
+        }).filter(r -> r.getStatusCode().value() != 201).findFirst().orElseThrow();
+        int statusPerdedor = respostaPerdedora.getStatusCode().value();
+        assertThat(statusPerdedor).isIn(400, 409);
+        if (statusPerdedor == 409) {
+            assertThat(respostaPerdedora.getBody()).contains("Esse horário acabou de ser reservado");
+        } else {
+            assertThat(respostaPerdedora.getBody()).contains("Horário indisponível");
+        }
     }
 }
 ```
@@ -1640,7 +1667,7 @@ public AgendamentoCriadoDTO criar(@PathVariable String slug,
 }
 ```
 
-- [ ] **Step 5: Rodar** — `./mvnw -q test -Dtest='AgendamentoPublicoIT,ConcorrenciaAgendamentoIT'`. Esperado: PASS. Suíte completa verde.
+- [ ] **Step 5: Rodar** — `./mvnw -q test -Dtest='AgendamentoPublicoTest,ConcorrenciaAgendamentoTest'`. Esperado: PASS. Suíte completa verde.
 
 - [ ] **Step 6: Commit** — `git commit -am "feat(backend): agendamento público com upsert de cliente e trava de concorrência"`
 

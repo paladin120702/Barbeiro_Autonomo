@@ -32,6 +32,20 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("erro", "Esse horário acabou de ser reservado. Escolha outro."));
         }
+        // Violação de UNIQUE constraint genérica: cobre o padrão find-then-save sem
+        // lock que existe em mais de um service (ex.: ClienteService.upsert em
+        // "clientes_barbeiro_id_telefone_key", HorarioService.criarExcecao na UNIQUE
+        // de excecoes_horario) — duas requisições concorrentes com o mesmo valor
+        // nunca visto passam pelo find (nenhuma acha nada) e uma delas estoura a
+        // constraint só no save(). Texto confirmado empiricamente contra Postgres 16
+        // real (Testcontainers) em ConcorrenciaClienteNovoTest: "duplicate key value
+        // violates unique constraint". Ancorado nesse prefixo (não no nome da
+        // constraint, que varia por tabela) para não alcançar violação de FK/NOT
+        // NULL/CHECK, que indicam bug real e devem continuar caindo no 500 genérico.
+        if (msg.contains("duplicate key value violates unique constraint")) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("erro", "Esse registro já existe ou acabou de ser processado. Tente novamente."));
+        }
         // Não relança: exceção relançada de dentro de um @ExceptionHandler escapa do
         // DispatcherServlet sem passar pelo catch-all (o resolver trata o caso
         // invocationEx == exception devolvendo null). Verificado em

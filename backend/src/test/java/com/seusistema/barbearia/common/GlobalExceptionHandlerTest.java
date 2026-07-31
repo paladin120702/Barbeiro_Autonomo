@@ -36,6 +36,22 @@ class GlobalExceptionHandlerTest {
         assertThat(resp.getBody().get("erro").toString()).doesNotContain("barbeiros_email_key");
     }
 
+    /**
+     * Texto real confirmado empiricamente contra Postgres 16 (Testcontainers) em
+     * ConcorrenciaClienteNovoTest: duas requisições concorrentes com o mesmo
+     * telefone nunca visto disparam essa mensagem exata na segunda que chega ao
+     * save(). Antes do fix, isso caía no catch-all e virava 500.
+     */
+    @Test
+    void violacaoDeUniqueConstraintGenericaVira409ComMensagemAmigavel() {
+        var ex = new DataIntegrityViolationException(
+            "ERROR: duplicate key value violates unique constraint \"clientes_barbeiro_id_telefone_key\"");
+        var resp = handler.handleConflito(ex);
+        assertThat(resp.getStatusCode().value()).isEqualTo(409);
+        assertThat(resp.getBody())
+            .containsEntry("erro", "Esse registro já existe ou acabou de ser processado. Tente novamente.");
+    }
+
     @Test
     void recursoNaoEncontradoVira404() {
         var resp = handler.handleNaoEncontrado(new RecursoNaoEncontradoException("Barbeiro não encontrado"));
