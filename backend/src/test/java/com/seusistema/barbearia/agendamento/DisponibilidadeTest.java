@@ -7,6 +7,7 @@ import com.seusistema.barbearia.agendamento.dto.DisponibilidadeDTO;
 import com.seusistema.barbearia.barbeiro.BarbeiroService;
 import com.seusistema.barbearia.barbeiro.dto.CriarBarbeiroRequest;
 import com.seusistema.barbearia.cliente.Cliente;
+import com.seusistema.barbearia.common.ratelimit.RateLimitInterceptor;
 import com.seusistema.barbearia.cliente.ClienteRepository;
 import com.seusistema.barbearia.horario.ExcecaoHorario;
 import com.seusistema.barbearia.horario.ExcecaoHorarioRepository;
@@ -44,6 +45,7 @@ class DisponibilidadeTest extends IntegrationTestBase {
     @Autowired AgendamentoRepository agendamentos;
     @Autowired ClienteRepository clientesRepo;
     @Autowired ServicoRepository servicosRepo;
+    @Autowired RateLimitInterceptor rateLimitInterceptor;
 
     Long barbeiroId;
     Cliente cliente;
@@ -51,6 +53,7 @@ class DisponibilidadeTest extends IntegrationTestBase {
 
     @BeforeEach
     void setUp() {
+        rateLimitInterceptor.limpar();
         var ativo = barbeiroService.criar(new CriarBarbeiroRequest("João Barbeiro", "joao@b.com", "senha123", "joao"));
         barbeiroId = ativo.getId();
 

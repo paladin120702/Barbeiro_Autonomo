@@ -1853,13 +1853,15 @@ public class CaixaService {
 
 **Files:**
 - Create: `backend/src/main/java/com/seusistema/barbearia/common/ratelimit/RateLimitInterceptor.java`, `config/WebConfig.java`
-- Test: `backend/src/test/java/com/seusistema/barbearia/common/RateLimitIT.java`
+- Modify: `backend/src/test/java/com/seusistema/barbearia/agendamento/DisponibilidadeTest.java`, `backend/src/test/java/com/seusistema/barbearia/agendamento/AgendamentoPublicoTest.java` (chamar `limpar()` no `@BeforeEach` — ver nota abaixo)
+- Test: `backend/src/test/java/com/seusistema/barbearia/common/RateLimitTest.java`
 
 **Interfaces:**
 - Consumes: nada novo.
 - Produces: `RateLimitInterceptor` (o do MVP doc seção 5.3, verbatim — 3 req/10min por IP, `ConcurrentHashMap` em memória, 429 sem body extra: adicionar `response.setContentType("application/json;charset=UTF-8")` e body `{"erro": "Muitas requisições. Tente novamente em alguns minutos."}`). `WebConfig implements WebMvcConfigurer` registra o interceptor **apenas** nos paths `/api/v1/public/*/disponibilidade` e `/api/v1/public/*/agendamentos`.
+- **ATENÇÃO — regressão real em testes já commitados**: `DisponibilidadeTest` (12 métodos, cada um bate em `/disponibilidade`) e `AgendamentoPublicoTest` (8 métodos, cada um bate em `/agendamentos`) rodam TODOS os seus métodos na MESMA instância de `RateLimitInterceptor` (cada classe de teste tem seu próprio contexto Spring — configs de `@Import(ClockDeTeste)` diferentes por classe — mas dentro de uma mesma classe o contexto e portanto o interceptor são compartilhados entre os métodos). As duas excedem o limite de 3 requests dentro da própria classe e vão começar a receber 429 a partir do 4º teste, quebrando testes que nada têm a ver com rate limit. Ambas precisam expor o mesmo padrão do `RateLimitTest`: `@Autowired RateLimitInterceptor` + chamar `.limpar()` no `@BeforeEach`. `AgendaAppTest`, `ConcorrenciaAgendamentoTest` e `ConcorrenciaClienteNovoTest` fazem ≤2 chamadas às rotas limitadas dentro da própria classe (abaixo do limite) — não precisam de mudança, mas confirmar isso rodando a suíte completa, não supondo.
 
-- [ ] **Step 1: Teste falhando** — `RateLimitIT extends IntegrationTestBase` (barbeiro com horário; Clock real ok):
+- [ ] **Step 1: Teste falhando** — `RateLimitTest extends IntegrationTestBase` (barbeiro com horário; Clock real ok):
   - 3 GETs `/disponibilidade?data=<amanhã>` → nenhum 429; 4º → 429 com `{"erro": ...}`.
   - Mistura conta no mesmo balde: 2 GETs disponibilidade + 1 POST agendamentos + 1 GET disponibilidade → 4º recebe 429.
   - `GET /api/v1/public/{slug}` e `GET .../servicos` repetidos 5× → nunca 429 (fora do escopo do limite).

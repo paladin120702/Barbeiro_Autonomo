@@ -11,6 +11,7 @@ import com.seusistema.barbearia.barbeiro.StatusConta;
 import com.seusistema.barbearia.barbeiro.dto.CriarBarbeiroRequest;
 import com.seusistema.barbearia.cliente.Cliente;
 import com.seusistema.barbearia.cliente.ClienteRepository;
+import com.seusistema.barbearia.common.ratelimit.RateLimitInterceptor;
 import com.seusistema.barbearia.horario.HorarioFuncionamento;
 import com.seusistema.barbearia.horario.HorarioFuncionamentoRepository;
 import com.seusistema.barbearia.servico.Servico;
@@ -47,12 +48,14 @@ class AgendamentoPublicoTest extends IntegrationTestBase {
     @Autowired ServicoRepository servicosRepo;
     @Autowired ClienteRepository clientesRepo;
     @Autowired AgendamentoRepository agendamentos;
+    @Autowired RateLimitInterceptor rateLimitInterceptor;
 
     Long barbeiroId;
     Long servicoId;
 
     @BeforeEach
     void setUp() {
+        rateLimitInterceptor.limpar();
         Barbeiro ativo = barbeiroService.criar(
             new CriarBarbeiroRequest("João Barbeiro", "joao@b.com", "senha123", "joao"));
         barbeiroId = ativo.getId();
