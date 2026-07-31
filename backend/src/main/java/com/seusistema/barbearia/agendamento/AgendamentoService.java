@@ -1,7 +1,10 @@
 package com.seusistema.barbearia.agendamento;
 
 import com.seusistema.barbearia.agendamento.dto.AgendamentoCriadoDTO;
+import com.seusistema.barbearia.agendamento.dto.AgendamentoDTO;
+import com.seusistema.barbearia.agendamento.dto.CancelarRequest;
 import com.seusistema.barbearia.agendamento.dto.CriarAgendamentoRequest;
+import com.seusistema.barbearia.agendamento.dto.FinalizarRequest;
 import com.seusistema.barbearia.barbeiro.Barbeiro;
 import com.seusistema.barbearia.barbeiro.BarbeiroService;
 import com.seusistema.barbearia.cliente.Cliente;
@@ -16,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,5 +93,58 @@ public class AgendamentoService {
         Agendamento salvo = agendamentoRepository.save(agendamento);
 
         return new AgendamentoCriadoDTO(salvo.getId(), servico.getNome(), salvo.getDataHoraInicio(), cliente.getNome());
+    }
+
+    @Transactional
+    public List<AgendamentoDTO> listarDia(Long barbeiroId, LocalDate data) {
+        return agendamentoRepository
+            .listarDia(barbeiroId, data.atStartOfDay(), data.plusDays(1).atStartOfDay())
+            .stream()
+            .map(this::toDTO)
+            .toList();
+    }
+
+    @Transactional
+    public AgendamentoDTO finalizar(Long barbeiroId, Long id, FinalizarRequest req) {
+        Agendamento agendamento = agendamentoRepository.findByIdAndBarbeiroId(id, barbeiroId)
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Agendamento não encontrado"));
+
+        if (agendamento.getStatus() != StatusAgendamento.AGENDADO) {
+            throw new RegraDeNegocioException("Agendamento não pode ser finalizado");
+        }
+
+        agendamento.setStatus(StatusAgendamento.CONCLUIDO);
+        agendamento.setFormaPagamento(req.formaPagamento());
+        return toDTO(agendamentoRepository.save(agendamento));
+    }
+
+    @Transactional
+    public AgendamentoDTO cancelar(Long barbeiroId, Long id, CancelarRequest req) {
+        Agendamento agendamento = agendamentoRepository.findByIdAndBarbeiroId(id, barbeiroId)
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Agendamento não encontrado"));
+
+        if (req.status() != StatusAgendamento.CANCELADO && req.status() != StatusAgendamento.NAO_COMPARECEU) {
+            throw new RegraDeNegocioException("Status de cancelamento inválido");
+        }
+
+        if (agendamento.getStatus() != StatusAgendamento.AGENDADO) {
+            throw new RegraDeNegocioException("Agendamento não pode ser cancelado");
+        }
+
+        agendamento.setStatus(req.status());
+        return toDTO(agendamentoRepository.save(agendamento));
+    }
+
+    private AgendamentoDTO toDTO(Agendamento a) {
+        return new AgendamentoDTO(
+            a.getId(),
+            a.getDataHoraInicio(),
+            a.getDataHoraFim(),
+            a.getStatus().name(),
+            a.getFormaPagamento() != null ? a.getFormaPagamento().name() : null,
+            a.getServico().getNome(),
+            a.getServico().getPreco(),
+            a.getCliente().getNome(),
+            a.getCliente().getTelefone());
     }
 }

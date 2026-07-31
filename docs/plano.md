@@ -1677,8 +1677,8 @@ public AgendamentoCriadoDTO criar(@PathVariable String slug,
 
 **Files:**
 - Create: `backend/src/main/java/com/seusistema/barbearia/agendamento/AgendamentoController.java`, `agendamento/dto/AgendamentoDTO.java`, `agendamento/dto/FinalizarRequest.java`, `agendamento/dto/CancelarRequest.java`
-- Modify: `agendamento/AgendamentoService.java`
-- Test: `backend/src/test/java/com/seusistema/barbearia/agendamento/AgendaAppIT.java`
+- Modify: `agendamento/AgendamentoService.java`, `agendamento/AgendamentoRepository.java` (novo `@Query` com `JOIN FETCH` p/ `listarDia`)
+- Test: `backend/src/test/java/com/seusistema/barbearia/agendamento/AgendaAppTest.java`
 
 **Interfaces:**
 - Consumes: `AgendamentoService`, `AgendamentoRepository` (Tasks 3/10); `@AuthenticationPrincipal Long barbeiroId`.
@@ -1692,7 +1692,7 @@ public AgendamentoCriadoDTO criar(@PathVariable String slug,
     - `AgendamentoDTO cancelar(Long barbeiroId, Long id, CancelarRequest req)` — só de `AGENDADO` (senão `"Agendamento não pode ser cancelado"`); seta o status pedido; `forma_pagamento` permanece null.
 - Endpoints: `GET /api/v1/app/agendamentos?data=2026-08-03` → 200 lista; `POST /api/v1/app/agendamentos/{id}/finalizar` → 200; `POST /api/v1/app/agendamentos/{id}/cancelar` → 200.
 
-- [ ] **Step 1: Teste falhando** — `AgendaAppIT extends IntegrationTestBase` (barbeiro + login + serviço + cliente + 2 agendamentos no dia via repositories). Casos:
+- [ ] **Step 1: Teste falhando** — `AgendaAppTest extends IntegrationTestBase` (barbeiro + login + serviço + cliente + 2 agendamentos no dia via repositories). Casos:
   - GET dia → 200, 2 itens ordenados, com `servicoNome`, `clienteTelefone`.
   - GET outro dia → lista vazia.
   - POST finalizar {formaPagamento: "PIX"} → 200; banco: CONCLUIDO + PIX.

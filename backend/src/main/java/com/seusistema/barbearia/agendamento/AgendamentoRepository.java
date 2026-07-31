@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> {
 
@@ -12,6 +14,14 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     // agendamento no limite superior.
     List<Agendamento> findByBarbeiroIdAndDataHoraInicioGreaterThanEqualAndDataHoraInicioLessThanOrderByDataHoraInicio(
             Long id, LocalDateTime ini, LocalDateTime fimExclusivo);
+
+    // JOIN FETCH de cliente/serviço para evitar N+1/lazy na montagem do DTO da
+    // agenda do dia; range half-open [ini, fim) igual às demais queries de data.
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.cliente JOIN FETCH a.servico "
+            + "WHERE a.barbeiroId = :barbeiroId AND a.dataHoraInicio >= :ini AND a.dataHoraInicio < :fim "
+            + "ORDER BY a.dataHoraInicio")
+    List<Agendamento> listarDia(@Param("barbeiroId") Long barbeiroId,
+            @Param("ini") LocalDateTime ini, @Param("fim") LocalDateTime fim);
 
     Optional<Agendamento> findByIdAndBarbeiroId(Long id, Long barbeiroId);
 
