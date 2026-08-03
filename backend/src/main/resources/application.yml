@@ -16,3 +16,5 @@ barbearia:
   jwt:
     secret: ${JWT_SECRET:chave-dev-insegura-trocar-em-producao-0123456789abcdef}
     expiracao-dias: 7
+  cors:
+    origens: ${CORS_ORIGENS:http://localhost:5173,http://localhost:3000}

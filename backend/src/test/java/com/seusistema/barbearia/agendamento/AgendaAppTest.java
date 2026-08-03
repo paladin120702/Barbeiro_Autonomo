@@ -2,33 +2,23 @@ package com.seusistema.barbearia.agendamento;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.seusistema.barbearia.ClockFixoTestConfig;
 import com.seusistema.barbearia.IntegrationTestBase;
 import com.seusistema.barbearia.agendamento.dto.AgendamentoDTO;
 import com.seusistema.barbearia.agendamento.dto.CancelarRequest;
 import com.seusistema.barbearia.agendamento.dto.DisponibilidadeDTO;
 import com.seusistema.barbearia.agendamento.dto.FinalizarRequest;
-import com.seusistema.barbearia.barbeiro.BarbeiroService;
 import com.seusistema.barbearia.barbeiro.dto.CriarBarbeiroRequest;
 import com.seusistema.barbearia.cliente.Cliente;
 import com.seusistema.barbearia.cliente.ClienteRepository;
-import com.seusistema.barbearia.horario.HorarioFuncionamento;
-import com.seusistema.barbearia.horario.HorarioFuncionamentoRepository;
 import com.seusistema.barbearia.servico.Servico;
-import com.seusistema.barbearia.servico.ServicoRepository;
-import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -42,12 +32,9 @@ import org.springframework.http.ResponseEntity;
  * criados em 2026-08-10 (também segunda-feira), dentro do horário de
  * funcionamento configurado (9h-18h) e no futuro em relação ao "agora" fixado.
  */
-@Import(AgendaAppTest.ClockDeTeste.class)
+@Import(ClockFixoTestConfig.class)
 class AgendaAppTest extends IntegrationTestBase {
 
-    @Autowired BarbeiroService barbeiroService;
-    @Autowired HorarioFuncionamentoRepository horarios;
-    @Autowired ServicoRepository servicosRepo;
     @Autowired ClienteRepository clientesRepo;
     @Autowired AgendamentoRepository agendamentos;
 
@@ -58,24 +45,10 @@ class AgendaAppTest extends IntegrationTestBase {
 
     @BeforeEach
     void setUp() {
-        var ativo = barbeiroService.criar(
-            new CriarBarbeiroRequest("João Barbeiro", "joao@b.com", "senha123", "joao"));
-        barbeiroId = ativo.getId();
+        var fixtura = criarBarbeiroComHorarioSegundaEServicoCorte();
+        barbeiroId = fixtura.barbeiroId();
+        servico = fixtura.servico();
         auth = authHeaders("joao@b.com", "senha123");
-
-        HorarioFuncionamento segunda = new HorarioFuncionamento();
-        segunda.setBarbeiroId(barbeiroId);
-        segunda.setDiaSemana(1); // segunda-feira
-        segunda.setHoraInicio(LocalTime.of(9, 0));
-        segunda.setHoraFim(LocalTime.of(18, 0));
-        segunda.setAtivo(true);
-        horarios.save(segunda);
-
-        Servico s = new Servico();
-        s.setBarbeiroId(barbeiroId);
-        s.setNome("Corte");
-        s.setPreco(new BigDecimal("50.00"));
-        servico = servicosRepo.save(s);
 
         Cliente c = new Cliente();
         c.setBarbeiroId(barbeiroId);
@@ -202,18 +175,5 @@ class AgendaAppTest extends IntegrationTestBase {
             "/api/v1/app/agendamentos/" + a.getId() + "/cancelar", HttpMethod.POST,
             new HttpEntity<>(new CancelarRequest(StatusAgendamento.CANCELADO), authMaria), Map.class);
         assertThat(cancelar.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @TestConfiguration
-    static class ClockDeTeste {
-        @Bean
-        @Primary
-        Clock clockDeTeste() {
-            return Clock.fixed(
-                LocalDateTime.of(2026, 8, 3, 10, 30)
-                    .atZone(ZoneId.of("America/Sao_Paulo"))
-                    .toInstant(),
-                ZoneId.of("America/Sao_Paulo"));
-        }
     }
 }

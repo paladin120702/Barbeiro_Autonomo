@@ -2,33 +2,24 @@ package com.seusistema.barbearia.agendamento;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.seusistema.barbearia.ClockFixoTestConfig;
 import com.seusistema.barbearia.IntegrationTestBase;
 import com.seusistema.barbearia.agendamento.dto.DisponibilidadeDTO;
-import com.seusistema.barbearia.barbeiro.BarbeiroService;
-import com.seusistema.barbearia.barbeiro.dto.CriarBarbeiroRequest;
 import com.seusistema.barbearia.cliente.Cliente;
 import com.seusistema.barbearia.common.ratelimit.RateLimitInterceptor;
 import com.seusistema.barbearia.cliente.ClienteRepository;
 import com.seusistema.barbearia.horario.ExcecaoHorario;
 import com.seusistema.barbearia.horario.ExcecaoHorarioRepository;
 import com.seusistema.barbearia.horario.HorarioFuncionamento;
-import com.seusistema.barbearia.horario.HorarioFuncionamentoRepository;
 import com.seusistema.barbearia.servico.Servico;
-import com.seusistema.barbearia.servico.ServicoRepository;
-import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -36,15 +27,12 @@ import org.springframework.http.ResponseEntity;
  * "Agora" fixado em 2026-08-03T10:30 America/Sao_Paulo (segunda-feira) via
  * Clock @Primary de teste, sobrepondo o Clock.system do ClockConfig de produção.
  */
-@Import(DisponibilidadeTest.ClockDeTeste.class)
+@Import(ClockFixoTestConfig.class)
 class DisponibilidadeTest extends IntegrationTestBase {
 
-    @Autowired BarbeiroService barbeiroService;
-    @Autowired HorarioFuncionamentoRepository horarios;
     @Autowired ExcecaoHorarioRepository excecoes;
     @Autowired AgendamentoRepository agendamentos;
     @Autowired ClienteRepository clientesRepo;
-    @Autowired ServicoRepository servicosRepo;
     @Autowired RateLimitInterceptor rateLimitInterceptor;
 
     Long barbeiroId;
@@ -54,22 +42,9 @@ class DisponibilidadeTest extends IntegrationTestBase {
     @BeforeEach
     void setUp() {
         rateLimitInterceptor.limpar();
-        var ativo = barbeiroService.criar(new CriarBarbeiroRequest("João Barbeiro", "joao@b.com", "senha123", "joao"));
-        barbeiroId = ativo.getId();
-
-        HorarioFuncionamento segunda = new HorarioFuncionamento();
-        segunda.setBarbeiroId(barbeiroId);
-        segunda.setDiaSemana(1); // segunda-feira
-        segunda.setHoraInicio(LocalTime.of(9, 0));
-        segunda.setHoraFim(LocalTime.of(18, 0));
-        segunda.setAtivo(true);
-        horarios.save(segunda);
-
-        Servico s = new Servico();
-        s.setBarbeiroId(barbeiroId);
-        s.setNome("Corte");
-        s.setPreco(new BigDecimal("50.00"));
-        servico = servicosRepo.save(s);
+        var fixtura = criarBarbeiroComHorarioSegundaEServicoCorte();
+        barbeiroId = fixtura.barbeiroId();
+        servico = fixtura.servico();
 
         Cliente c = new Cliente();
         c.setBarbeiroId(barbeiroId);
@@ -203,23 +178,5 @@ class DisponibilidadeTest extends IntegrationTestBase {
 
         ResponseEntity<DisponibilidadeDTO> resp = buscar("joao", "2026-08-05"); // quarta-feira futura
         assertThat(resp.getBody().horarios()).containsExactly("10:00", "11:00");
-    }
-
-    @TestConfiguration
-    static class ClockDeTeste {
-        // Nome de método diferente de "clock": com o mesmo nome, o Spring Boot 3.4
-        // (allow-bean-definition-overriding=false por padrão) lança
-        // BeanDefinitionOverrideException antes mesmo de chegar a resolver @Primary
-        // — a colisão é pelo nome do bean, não pelo tipo. Nomes distintos deixam os
-        // dois beans Clock coexistirem e o @Primary desempata por tipo na injeção.
-        @Bean
-        @Primary
-        Clock clockDeTeste() {
-            return Clock.fixed(
-                LocalDateTime.of(2026, 8, 3, 10, 30)
-                    .atZone(ZoneId.of("America/Sao_Paulo"))
-                    .toInstant(),
-                ZoneId.of("America/Sao_Paulo"));
-        }
     }
 }

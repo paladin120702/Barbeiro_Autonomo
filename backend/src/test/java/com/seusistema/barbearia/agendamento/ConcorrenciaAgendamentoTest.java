@@ -2,64 +2,35 @@ package com.seusistema.barbearia.agendamento;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.seusistema.barbearia.ClockFixoTestConfig;
 import com.seusistema.barbearia.IntegrationTestBase;
-import com.seusistema.barbearia.barbeiro.Barbeiro;
-import com.seusistema.barbearia.barbeiro.BarbeiroService;
-import com.seusistema.barbearia.barbeiro.dto.CriarBarbeiroRequest;
-import com.seusistema.barbearia.horario.HorarioFuncionamento;
-import com.seusistema.barbearia.horario.HorarioFuncionamentoRepository;
-import com.seusistema.barbearia.servico.Servico;
-import com.seusistema.barbearia.servico.ServicoRepository;
-import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import com.seusistema.barbearia.common.ratelimit.RateLimitInterceptor;
 import java.util.List;
 import java.util.concurrent.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.*;
 
 /**
  * "Agora" fixado em 2026-08-03T10:30 America/Sao_Paulo (segunda-feira), igual à
  * AgendamentoPublicoTest/DisponibilidadeTest.
  */
-@Import(ConcorrenciaAgendamentoTest.ClockDeTeste.class)
+@Import(ClockFixoTestConfig.class)
 class ConcorrenciaAgendamentoTest extends IntegrationTestBase {
 
     @Autowired TestRestTemplate rest;
-    @Autowired BarbeiroService barbeiroService;
-    @Autowired HorarioFuncionamentoRepository horarios;
-    @Autowired ServicoRepository servicosRepo;
+    @Autowired RateLimitInterceptor rateLimitInterceptor;
 
     Long servicoId;
 
     @BeforeEach
     void setUp() {
-        Barbeiro ativo = barbeiroService.criar(
-            new CriarBarbeiroRequest("João Barbeiro", "joao@b.com", "senha123", "joao"));
-        Long barbeiroId = ativo.getId();
-
-        HorarioFuncionamento segunda = new HorarioFuncionamento();
-        segunda.setBarbeiroId(barbeiroId);
-        segunda.setDiaSemana(1); // segunda-feira
-        segunda.setHoraInicio(LocalTime.of(9, 0));
-        segunda.setHoraFim(LocalTime.of(18, 0));
-        segunda.setAtivo(true);
-        horarios.save(segunda);
-
-        Servico s = new Servico();
-        s.setBarbeiroId(barbeiroId);
-        s.setNome("Corte");
-        s.setPreco(new BigDecimal("50.00"));
-        servicoId = servicosRepo.save(s).getId();
+        rateLimitInterceptor.limpar();
+        var fixtura = criarBarbeiroComHorarioSegundaEServicoCorte();
+        servicoId = fixtura.servico().getId();
     }
 
     @Test
@@ -102,19 +73,6 @@ class ConcorrenciaAgendamentoTest extends IntegrationTestBase {
             assertThat(respostaPerdedora.getBody()).contains("Esse horário acabou de ser reservado");
         } else {
             assertThat(respostaPerdedora.getBody()).contains("Horário indisponível");
-        }
-    }
-
-    @TestConfiguration
-    static class ClockDeTeste {
-        @Bean
-        @Primary
-        Clock clockDeTeste() {
-            return Clock.fixed(
-                LocalDateTime.of(2026, 8, 3, 10, 30)
-                    .atZone(ZoneId.of("America/Sao_Paulo"))
-                    .toInstant(),
-                ZoneId.of("America/Sao_Paulo"));
         }
     }
 }

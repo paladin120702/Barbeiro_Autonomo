@@ -2,35 +2,26 @@ package com.seusistema.barbearia.agendamento;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.seusistema.barbearia.ClockFixoTestConfig;
 import com.seusistema.barbearia.IntegrationTestBase;
 import com.seusistema.barbearia.agendamento.dto.AgendamentoCriadoDTO;
 import com.seusistema.barbearia.barbeiro.Barbeiro;
 import com.seusistema.barbearia.barbeiro.BarbeiroRepository;
-import com.seusistema.barbearia.barbeiro.BarbeiroService;
 import com.seusistema.barbearia.barbeiro.StatusConta;
 import com.seusistema.barbearia.barbeiro.dto.CriarBarbeiroRequest;
 import com.seusistema.barbearia.cliente.Cliente;
 import com.seusistema.barbearia.cliente.ClienteRepository;
 import com.seusistema.barbearia.common.ratelimit.RateLimitInterceptor;
-import com.seusistema.barbearia.horario.HorarioFuncionamento;
-import com.seusistema.barbearia.horario.HorarioFuncionamentoRepository;
 import com.seusistema.barbearia.servico.Servico;
-import com.seusistema.barbearia.servico.ServicoRepository;
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -39,13 +30,10 @@ import org.springframework.http.ResponseEntity;
  * DisponibilidadeTest, via Clock @Primary de teste sobrepondo o Clock.system do
  * ClockConfig de produção.
  */
-@Import(AgendamentoPublicoTest.ClockDeTeste.class)
+@Import(ClockFixoTestConfig.class)
 class AgendamentoPublicoTest extends IntegrationTestBase {
 
-    @Autowired BarbeiroService barbeiroService;
     @Autowired BarbeiroRepository barbeiroRepository;
-    @Autowired HorarioFuncionamentoRepository horarios;
-    @Autowired ServicoRepository servicosRepo;
     @Autowired ClienteRepository clientesRepo;
     @Autowired AgendamentoRepository agendamentos;
     @Autowired RateLimitInterceptor rateLimitInterceptor;
@@ -56,23 +44,9 @@ class AgendamentoPublicoTest extends IntegrationTestBase {
     @BeforeEach
     void setUp() {
         rateLimitInterceptor.limpar();
-        Barbeiro ativo = barbeiroService.criar(
-            new CriarBarbeiroRequest("João Barbeiro", "joao@b.com", "senha123", "joao"));
-        barbeiroId = ativo.getId();
-
-        HorarioFuncionamento segunda = new HorarioFuncionamento();
-        segunda.setBarbeiroId(barbeiroId);
-        segunda.setDiaSemana(1); // segunda-feira
-        segunda.setHoraInicio(LocalTime.of(9, 0));
-        segunda.setHoraFim(LocalTime.of(18, 0));
-        segunda.setAtivo(true);
-        horarios.save(segunda);
-
-        Servico s = new Servico();
-        s.setBarbeiroId(barbeiroId);
-        s.setNome("Corte");
-        s.setPreco(new BigDecimal("50.00"));
-        servicoId = servicosRepo.save(s).getId();
+        var fixtura = criarBarbeiroComHorarioSegundaEServicoCorte();
+        barbeiroId = fixtura.barbeiroId();
+        servicoId = fixtura.servico().getId();
     }
 
     private Map<String, Object> corpo(Long servicoId, String dataHora, String nome, String telefone) {
@@ -142,7 +116,7 @@ class AgendamentoPublicoTest extends IntegrationTestBase {
         c.setTelefone("11911111111");
         c = clientesRepo.save(c);
 
-        Servico servico = servicosRepo.findById(servicoId).orElseThrow();
+        Servico servico = servicos.findById(servicoId).orElseThrow();
 
         Agendamento existente = new Agendamento();
         existente.setBarbeiroId(barbeiroId);
@@ -164,7 +138,7 @@ class AgendamentoPublicoTest extends IntegrationTestBase {
         servicoDoPedro.setBarbeiroId(outro.getId());
         servicoDoPedro.setNome("Barba");
         servicoDoPedro.setPreco(new BigDecimal("30.00"));
-        Long idServicoDoPedro = servicosRepo.save(servicoDoPedro).getId();
+        Long idServicoDoPedro = servicos.save(servicoDoPedro).getId();
 
         ResponseEntity<Map> resp = postar("joao", corpo(idServicoDoPedro, "2026-08-10T14:00:00", "Maria", "11987654321"));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -189,16 +163,10 @@ class AgendamentoPublicoTest extends IntegrationTestBase {
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
-    @TestConfiguration
-    static class ClockDeTeste {
-        @Bean
-        @Primary
-        Clock clockDeTeste() {
-            return Clock.fixed(
-                LocalDateTime.of(2026, 8, 3, 10, 30)
-                    .atZone(ZoneId.of("America/Sao_Paulo"))
-                    .toInstant(),
-                ZoneId.of("America/Sao_Paulo"));
-        }
+    @Test
+    void dataHoraMalformadaRetorna400() {
+        ResponseEntity<Map> resp = postar("joao", corpo(servicoId, "não-é-uma-data", "Maria", "11987654321"));
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(resp.getBody()).containsEntry("erro", "Data/hora inválida");
     }
 }
