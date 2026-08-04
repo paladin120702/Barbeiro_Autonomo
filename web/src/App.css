@@ -161,6 +161,138 @@
   }
 }
 
+.estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.estado-carregando .spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.estado-erro button {
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.lista-servicos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.card-servico {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--accent-bg);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--accent-border);
+  }
+}
+
+.card-servico-nome {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.card-servico-preco {
+  font-size: 15px;
+  color: var(--accent);
+}
+
+.card-servico-duracao {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.etapa-horario {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.etapa-horario label {
+  font-size: 14px;
+}
+
+.etapa-horario input[type='date'] {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 16px;
+}
+
+.botao-voltar {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.grid-horarios {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.botao-horario {
+  padding: 10px 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--accent-bg);
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--accent-border);
+  }
+}
+
+.sem-horarios {
+  font-size: 14px;
+  opacity: 0.8;
+  padding: 8px 0;
+}
+
 .ticks {
   position: relative;
   width: 100%;
