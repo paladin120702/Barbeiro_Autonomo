@@ -1,0 +1,617 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1785940774.0977538,
+    "ast_hash": "d1b6f40ac50b42c2a7c72b2e202b4bd2",
+    "semantic_hash": ""
+  },
+  "backend/mvnw": {
+    "mtime": 1716315120.0,
+    "ast_hash": "2fe09837c0b4dfabab4c4b206bcd0850",
+    "semantic_hash": ""
+  },
+  "backend/pom.xml": {
+    "mtime": 1784479718.9238076,
+    "ast_hash": "d51425f7ff63bd5ed04b983656487eed",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/BarbeariaApplication.java": {
+    "mtime": 1784479204.295749,
+    "ast_hash": "15a86f29c88c522aab6c552add4a27df",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/Agendamento.java": {
+    "mtime": 1784577645.6336453,
+    "ast_hash": "bbd482b2c4eafd051a93bb3b67e744c7",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/AgendamentoController.java": {
+    "mtime": 1785526924.3082736,
+    "ast_hash": "f5d30d6b1836ed6e522d2296f11af4a9",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/AgendamentoPublicoController.java": {
+    "mtime": 1785442731.1464787,
+    "ast_hash": "5125f8b3974a18579bff257dfa5d59f0",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/AgendamentoRepository.java": {
+    "mtime": 1785526892.2410538,
+    "ast_hash": "bac58b627802fb2ab1f9a1eaf41323cb",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/AgendamentoService.java": {
+    "mtime": 1785526945.8353186,
+    "ast_hash": "8d8fb520dbd38e27d6dc886c3231e647",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/DisponibilidadeService.java": {
+    "mtime": 1785438019.4188266,
+    "ast_hash": "e8553ebeb091e2f56be92ce406b70779",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/FormaPagamento.java": {
+    "mtime": 1784577627.4245799,
+    "ast_hash": "7fc9374c0a777ec9677fc01aec0522d2",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/StatusAgendamento.java": {
+    "mtime": 1784577606.2835035,
+    "ast_hash": "ccbd069468f3cde7e9824ef769979148",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/dto/AgendamentoCriadoDTO.java": {
+    "mtime": 1785442691.1529093,
+    "ast_hash": "3092230586c55b95b1a842703ee51eff",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/dto/AgendamentoDTO.java": {
+    "mtime": 1785526863.178855,
+    "ast_hash": "396f0da1de05156a41a08198152e8faa",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/dto/CancelarRequest.java": {
+    "mtime": 1785526873.1659234,
+    "ast_hash": "a45a1f4d1a6fb3f2ca383fff797ff87f",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/dto/CriarAgendamentoRequest.java": {
+    "mtime": 1785442667.20874,
+    "ast_hash": "52dad2fbb809a7c35ad9a612649dc908",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/dto/DisponibilidadeDTO.java": {
+    "mtime": 1785437907.567843,
+    "ast_hash": "bc1557bc776ca62181a5997b7ba55b1b",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/agendamento/dto/FinalizarRequest.java": {
+    "mtime": 1785526864.9078667,
+    "ast_hash": "d9b69499a57f2a6584f29169de9f5a86",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/barbeiro/Barbeiro.java": {
+    "mtime": 1784577586.5239537,
+    "ast_hash": "dc4df86acd76ab136ec5190650ecdcb6",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/barbeiro/BarbeiroController.java": {
+    "mtime": 1784836920.404108,
+    "ast_hash": "3b607c75af8d85493eadadd0d19c7a7d",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/barbeiro/BarbeiroPublicoController.java": {
+    "mtime": 1784913494.8331978,
+    "ast_hash": "7c65903cd64b964b29116e0cd70a3b28",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/barbeiro/BarbeiroRepository.java": {
+    "mtime": 1784578207.161868,
+    "ast_hash": "c051bb061ca862d88d7ebdfce8bd3dff",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/barbeiro/BarbeiroService.java": {
+    "mtime": 1784904494.0422573,
+    "ast_hash": "e8c8be6fc03a434c10e3aceb57dcdabb",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/barbeiro/StatusConta.java": {
+    "mtime": 1784577582.3884175,
+    "ast_hash": "e7fba2aab14b6a9a8f6964e4f4fa3a45",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/barbeiro/dto/BarbeiroPublicoDTO.java": {
+    "mtime": 1784913491.6441896,
+    "ast_hash": "d3da41cf47573acd7d424e0d29ec622f",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/barbeiro/dto/CriarBarbeiroRequest.java": {
+    "mtime": 1784836876.3430867,
+    "ast_hash": "2e8e7eab72461c5f7d4964e544821553",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/barbeiro/dto/LoginRequest.java": {
+    "mtime": 1784836866.9800832,
+    "ast_hash": "eff24a8167168e247124ff71f9c7e29d",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/barbeiro/dto/LoginResponse.java": {
+    "mtime": 1784836875.0881634,
+    "ast_hash": "57bd15ac132e361a03800e8c81e4fed1",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/caixa/CaixaController.java": {
+    "mtime": 1785528215.9747124,
+    "ast_hash": "1c4a3feac3f5eab9c71debab896c443d",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/caixa/CaixaService.java": {
+    "mtime": 1785528209.8876584,
+    "ast_hash": "e2df890d898c03c6c260d7dd4b9aff33",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/caixa/dto/CaixaDTO.java": {
+    "mtime": 1785528196.9385433,
+    "ast_hash": "3b27301f76ecdcc36b07b44b52d697a4",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/cliente/Cliente.java": {
+    "mtime": 1784577591.3694499,
+    "ast_hash": "bd3969f34b4ee3f92c5eef89f6bf56c1",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/cliente/ClienteRepository.java": {
+    "mtime": 1784578212.2326949,
+    "ast_hash": "be4827d127c7db08e85182456bae5c3f",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/cliente/ClienteService.java": {
+    "mtime": 1785442626.9204574,
+    "ast_hash": "75114c09321eefff3e0853d75a02d4f9",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/common/exception/GlobalExceptionHandler.java": {
+    "mtime": 1785506726.037096,
+    "ast_hash": "f59b25884d6ea023cf7c0a33c9dd9d7c",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/common/exception/RecursoNaoEncontradoException.java": {
+    "mtime": 1784661049.734567,
+    "ast_hash": "2fadf73da5cd208eb3250c3016ed5d68",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/common/exception/RegraDeNegocioException.java": {
+    "mtime": 1784661051.8365731,
+    "ast_hash": "76e0b8cc36a83243d38306abdd49f924",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/common/ratelimit/RateLimitInterceptor.java": {
+    "mtime": 1785529929.86306,
+    "ast_hash": "fe8731828b519d5c5c590a51be5ae699",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/common/validacao/TelefoneBR.java": {
+    "mtime": 1785442611.7893517,
+    "ast_hash": "b84f848945fd1ca8b074826de569f0d8",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/config/ClockConfig.java": {
+    "mtime": 1785437898.7547653,
+    "ast_hash": "971cdf344745e55a95b8ed5b7d170358",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/config/CorsConfig.java": {
+    "mtime": 1785787765.7113452,
+    "ast_hash": "7cdf2c20c04ed80b422046fda1e790e2",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/config/CriarBarbeiroRunner.java": {
+    "mtime": 1784836921.3421085,
+    "ast_hash": "56e6b204f4edecb4dba280793ba83b55",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/config/SecurityConfig.java": {
+    "mtime": 1784902374.2532656,
+    "ast_hash": "929cac4fe35dbecc061fe58ee3f7b3bb",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/config/WebConfig.java": {
+    "mtime": 1785529932.6830907,
+    "ast_hash": "280854acaf73caab39d74cf0a9126936",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/horario/ExcecaoHorario.java": {
+    "mtime": 1784577602.282632,
+    "ast_hash": "44e78e4c9c5dec262fdda98d5ed6c850",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/horario/ExcecaoHorarioRepository.java": {
+    "mtime": 1784578216.5647106,
+    "ast_hash": "9ed7d4df1b1566f5e204ba8f6801a9b1",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/horario/HorarioController.java": {
+    "mtime": 1785434703.3694217,
+    "ast_hash": "0cea1eace6256de91fd1dadd916b6bd9",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/horario/HorarioFuncionamento.java": {
+    "mtime": 1784577710.6928802,
+    "ast_hash": "a7082aa45c0636e3bc5d34eed9a7c00c",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/horario/HorarioFuncionamentoRepository.java": {
+    "mtime": 1784578215.6036928,
+    "ast_hash": "8509a6c36b41e309c5ae404012a05f86",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/horario/HorarioService.java": {
+    "mtime": 1785434689.920288,
+    "ast_hash": "c5caa52a5548a5666b383f5051eac75a",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/horario/dto/ExcecaoHorarioDTO.java": {
+    "mtime": 1785434648.6108747,
+    "ast_hash": "142322e28259166481854a8fc21dd3d7",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/horario/dto/HorarioFuncionamentoDTO.java": {
+    "mtime": 1785434632.2477095,
+    "ast_hash": "9ceaea82cac4ab2ab235e359ceb309b0",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/horario/dto/SalvarExcecaoRequest.java": {
+    "mtime": 1785434660.2559917,
+    "ast_hash": "b4adae957306d62796234220e59be6ea",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/horario/dto/SalvarHorarioRequest.java": {
+    "mtime": 1785434641.0237982,
+    "ast_hash": "2c8d177f714dc0c7f2dc8f65defdf758",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/security/JwtAuthFilter.java": {
+    "mtime": 1784904475.8392467,
+    "ast_hash": "7b60685d6d64626e2892e7e38f5d67c3",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/security/JwtService.java": {
+    "mtime": 1784836884.5460901,
+    "ast_hash": "f3852fa27c667d0da48e2ed51fc75693",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/servico/Servico.java": {
+    "mtime": 1784577589.455443,
+    "ast_hash": "3c92e5b0f8125a74258b0873141a21e9",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/servico/ServicoController.java": {
+    "mtime": 1784914235.3670647,
+    "ast_hash": "67ef9b18a9997c81e1cd33b7030d395b",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/servico/ServicoPublicoController.java": {
+    "mtime": 1784913496.8593411,
+    "ast_hash": "b3a75222f7ab11a6aec449095f21a3ec",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/servico/ServicoRepository.java": {
+    "mtime": 1784578210.91769,
+    "ast_hash": "8e5379e6a4e0bade5f00741e99cd4c17",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/servico/ServicoService.java": {
+    "mtime": 1784914264.0861368,
+    "ast_hash": "043dfd739d7a62ff845ccd1bdde38ce7",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/servico/dto/SalvarServicoRequest.java": {
+    "mtime": 1784914225.0590389,
+    "ast_hash": "a5663046d60b222332e03c6f36905bf8",
+    "semantic_hash": ""
+  },
+  "backend/src/main/java/com/seusistema/barbearia/servico/dto/ServicoDTO.java": {
+    "mtime": 1784913493.001193,
+    "ast_hash": "dd80430dae8fc1d5e8df7c481205096d",
+    "semantic_hash": ""
+  },
+  "backend/src/main/resources/db/dev/R__seed_dev.sql": {
+    "mtime": 1784837177.6003606,
+    "ast_hash": "be288c52fa0880f336ad8f224445d25d",
+    "semantic_hash": ""
+  },
+  "backend/src/main/resources/db/migration/V1__schema.sql": {
+    "mtime": 1784575535.6856532,
+    "ast_hash": "f479857978ffbb20ad301857f19c9984",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/AgendamentoRepositoryTest.java": {
+    "mtime": 1784658500.614997,
+    "ast_hash": "aa5b3e71358b71b5254e81907805bf4b",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/ClockFixoTestConfig.java": {
+    "mtime": 1785785417.5998669,
+    "ast_hash": "d94f5a79b0ce4ce4f1a0e48c251d365b",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/ContextLoadsTest.java": {
+    "mtime": 1784479309.7237551,
+    "ast_hash": "1d8b48a9078fcd617c6062146d4580d5",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/EntidadesMapeamentoTest.java": {
+    "mtime": 1784656687.7344892,
+    "ast_hash": "abb3fd25ade8ab43e8aec41691092195",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/IntegrationTestBase.java": {
+    "mtime": 1785785440.640019,
+    "ast_hash": "0ce7d94887252cc207d820b0149c1606",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/MigrationConstraintTest.java": {
+    "mtime": 1784656684.947483,
+    "ast_hash": "7f458538759ee5fce4cf1bb818f93589",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/agendamento/AgendaAppTest.java": {
+    "mtime": 1785785560.025806,
+    "ast_hash": "d85c7bccf6e82b770f362a9e1fd05fea",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/agendamento/AgendamentoPublicoTest.java": {
+    "mtime": 1785785802.120536,
+    "ast_hash": "f4bbcd7c0e2568122daa5400bd8895bf",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/agendamento/ConcorrenciaAgendamentoTest.java": {
+    "mtime": 1785786522.0476904,
+    "ast_hash": "215b6bcab6c916d5c6193302e246b5c3",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/agendamento/ConcorrenciaClienteNovoTest.java": {
+    "mtime": 1785786535.4487865,
+    "ast_hash": "b49426ddc5a1f79ff3809a25cc6d16ab",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/agendamento/DisponibilidadeTest.java": {
+    "mtime": 1785785670.5015342,
+    "ast_hash": "a5335e6ccd0cdd8b05418496d8f2da48",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/barbeiro/BarbeiroServiceTest.java": {
+    "mtime": 1784904516.7752724,
+    "ast_hash": "25a58f2fd03e4bd502df8825c8c16923",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/barbeiro/VitrinePublicaTest.java": {
+    "mtime": 1784913468.0651295,
+    "ast_hash": "ad98c09c1842e9e24b5c00680cb51999",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/caixa/CaixaTest.java": {
+    "mtime": 1785528155.9131758,
+    "ast_hash": "f728e7ef08d18b00fa7283d795d3986c",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/common/GlobalExceptionHandlerRoteamentoTest.java": {
+    "mtime": 1784663838.3098779,
+    "ast_hash": "26ca61c0ff816f99fc2b5b07568d42a5",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/common/GlobalExceptionHandlerTest.java": {
+    "mtime": 1785506734.4971511,
+    "ast_hash": "1fa300fb2de058428f6c077832f24eff",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/common/RateLimitTest.java": {
+    "mtime": 1785529875.0044518,
+    "ast_hash": "bf78ed83d87599e54098ef0ecd90c3f6",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/horario/HorarioCrudTest.java": {
+    "mtime": 1785436400.3090227,
+    "ast_hash": "b545fe4702a3c8609f256847f798b2b0",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/security/AutenticacaoTest.java": {
+    "mtime": 1784904536.038287,
+    "ast_hash": "092c3c948ccce7b6af0db4a0d66408d4",
+    "semantic_hash": ""
+  },
+  "backend/src/test/java/com/seusistema/barbearia/servico/ServicoCrudTest.java": {
+    "mtime": 1784914178.9939234,
+    "ast_hash": "2023f4c046d6e9d81f005d10f7a871b2",
+    "semantic_hash": ""
+  },
+  "web/.oxlintrc.json": {
+    "mtime": 1785853803.7402148,
+    "ast_hash": "029f4905006c1fffd96bc863e2d98d3e",
+    "semantic_hash": ""
+  },
+  "web/package.json": {
+    "mtime": 1785854459.8281295,
+    "ast_hash": "2791f497f8f69bfe7d1f0aa75b4c35ac",
+    "semantic_hash": ""
+  },
+  "web/src/App.tsx": {
+    "mtime": 1785853803.7416444,
+    "ast_hash": "c5e44a49ac2a44373fba5d1a7fe35be4",
+    "semantic_hash": ""
+  },
+  "web/src/api/agendamentoPublicoApi.test.ts": {
+    "mtime": 1785854533.8975673,
+    "ast_hash": "860f62af3cc0e0f04cbab40217ef95df",
+    "semantic_hash": ""
+  },
+  "web/src/api/agendamentoPublicoApi.ts": {
+    "mtime": 1785854574.8518102,
+    "ast_hash": "20c7ef22264f34eff82c0f0d41d0ac8a",
+    "semantic_hash": ""
+  },
+  "web/src/api/httpClient.ts": {
+    "mtime": 1785854640.077198,
+    "ast_hash": "32726f54487728af4f39831e87f103c9",
+    "semantic_hash": ""
+  },
+  "web/src/components/Estados.tsx": {
+    "mtime": 1785869203.4815316,
+    "ast_hash": "936c965a1f94a00c45f708672faf328e",
+    "semantic_hash": ""
+  },
+  "web/src/components/EtapaHorario.test.tsx": {
+    "mtime": 1785869175.6673458,
+    "ast_hash": "3bd392c288a1891352a9da09df538f4a",
+    "semantic_hash": ""
+  },
+  "web/src/components/EtapaHorario.tsx": {
+    "mtime": 1785869266.4863,
+    "ast_hash": "775e64315fb72a5eddb95349870c4a64",
+    "semantic_hash": ""
+  },
+  "web/src/components/EtapaServico.test.tsx": {
+    "mtime": 1785869159.7852395,
+    "ast_hash": "60eb0f5dc657472bf8ec77d2fb06132d",
+    "semantic_hash": ""
+  },
+  "web/src/components/EtapaServico.tsx": {
+    "mtime": 1785869215.2456105,
+    "ast_hash": "9b3ab312e9e584a7c547e5b0a8f1e331",
+    "semantic_hash": ""
+  },
+  "web/src/hooks/useAgendamentoFlow.test.ts": {
+    "mtime": 1785868352.801831,
+    "ast_hash": "855013c112a3a451442f7ed773c55b49",
+    "semantic_hash": ""
+  },
+  "web/src/hooks/useAgendamentoFlow.ts": {
+    "mtime": 1785868522.8268008,
+    "ast_hash": "b615a7693d2e23c9c0d1369b2b8c0e36",
+    "semantic_hash": ""
+  },
+  "web/src/main.tsx": {
+    "mtime": 1785853803.7424946,
+    "ast_hash": "787e5a07efeb2bf6209d5937195f2f68",
+    "semantic_hash": ""
+  },
+  "web/src/setupTests.ts": {
+    "mtime": 1785854487.182291,
+    "ast_hash": "00e47f7b9836e8f731101981fa2bb2de",
+    "semantic_hash": ""
+  },
+  "web/src/types/dto.ts": {
+    "mtime": 1785854556.1826994,
+    "ast_hash": "0dd447d86b92c679412c15578357dc4e",
+    "semantic_hash": ""
+  },
+  "web/src/validacao/clienteSchema.test.ts": {
+    "mtime": 1785868398.9311411,
+    "ast_hash": "55c70c830d34d02607abdb34ab02f21f",
+    "semantic_hash": ""
+  },
+  "web/src/validacao/clienteSchema.ts": {
+    "mtime": 1785868504.9808536,
+    "ast_hash": "cfd4e214f2cbbcc0c76f0c5578821924",
+    "semantic_hash": ""
+  },
+  "web/tsconfig.app.json": {
+    "mtime": 1785853803.7427256,
+    "ast_hash": "5f2dafd737dea8a4ddcbb10f5113ac5a",
+    "semantic_hash": ""
+  },
+  "web/tsconfig.json": {
+    "mtime": 1785853803.7428916,
+    "ast_hash": "a3d39fa780ebff65444de257f291ce6c",
+    "semantic_hash": ""
+  },
+  "web/tsconfig.node.json": {
+    "mtime": 1785853803.7430255,
+    "ast_hash": "f9cb81ddcea69ffdab672fc8c48dca66",
+    "semantic_hash": ""
+  },
+  "web/vite.config.ts": {
+    "mtime": 1785853803.743163,
+    "ast_hash": "88439104b3c207f17d33ef3160e3b080",
+    "semantic_hash": ""
+  },
+  "web/vitest.config.ts": {
+    "mtime": 1785854476.6452286,
+    "ast_hash": "98caf6cf4b41897f5bfd7dea1aacace4",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1785940008.4639416,
+    "ast_hash": "82efb97a359f5c7290bf2513d14686be",
+    "semantic_hash": ""
+  },
+  "MVP-SaaS-Barbearia.md": {
+    "mtime": 1784241129.451781,
+    "ast_hash": "396d9e5ce1f6527494285344bd958952",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1785768953.1522932,
+    "ast_hash": "9f79bf983bf344a6edc82c798354f277",
+    "semantic_hash": ""
+  },
+  "backend/src/main/resources/application-dev.yml": {
+    "mtime": 1784837190.4353645,
+    "ast_hash": "1e95b165c04c5b2bf13ad95172e0e88c",
+    "semantic_hash": ""
+  },
+  "backend/src/main/resources/application.yml": {
+    "mtime": 1785785404.140778,
+    "ast_hash": "644c166520ad1f26087e04dc58325f81",
+    "semantic_hash": ""
+  },
+  "docker-compose.yml": {
+    "mtime": 1784479278.3041506,
+    "ast_hash": "d306a88b45b2ea11ef24e139586a4182",
+    "semantic_hash": ""
+  },
+  "docs/plano.md": {
+    "mtime": 1785785385.6516562,
+    "ast_hash": "4de3c1e9ad42911c0e04daa00b661c54",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-18-mvp-barbearia-design.md": {
+    "mtime": 1784393685.474404,
+    "ast_hash": "fb59d7a8678c23957fc0a828438bfa63",
+    "semantic_hash": ""
+  },
+  "web/README.md": {
+    "mtime": 1785853803.7398076,
+    "ast_hash": "10495bfcc6c568eca4dab6dd5df795d3",
+    "semantic_hash": ""
+  },
+  "web/index.html": {
+    "mtime": 1785853803.7402148,
+    "ast_hash": "c6b1f4abf65354674c35bfeba85f8ea4",
+    "semantic_hash": ""
+  },
+  "web/public/favicon.svg": {
+    "mtime": 1785853803.741068,
+    "ast_hash": "7e840862161341271697daa99a40d76b",
+    "semantic_hash": ""
+  },
+  "web/public/icons.svg": {
+    "mtime": 1785853803.7412467,
+    "ast_hash": "3b4fcfcf393eca4d264dca4a4663bc37",
+    "semantic_hash": ""
+  },
+  "web/src/assets/hero.png": {
+    "mtime": 1785853803.7419107,
+    "ast_hash": "aead493361b27e7510691c5d7072dfc1",
+    "semantic_hash": ""
+  },
+  "web/src/assets/react.svg": {
+    "mtime": 1785853803.7420883,
+    "ast_hash": "f0402b67b6ce880f65666bb49e841696",
+    "semantic_hash": ""
+  },
+  "web/src/assets/vite.svg": {
+    "mtime": 1785853803.7422323,
+    "ast_hash": "9960a24288958394ac50e57ff638b036",
+    "semantic_hash": ""
+  }
+}
