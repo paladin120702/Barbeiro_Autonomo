@@ -23,6 +23,12 @@ class AgendaViewModel extends ChangeNotifier {
   List<Agendamento> agendamentos = [];
   String? mensagemErro;
 
+  /// Mensagem de erro de uma ação pontual (cancelar/no-show), separada de
+  /// [mensagemErro] (erro de carregamento da lista inteira). Uma falha aqui
+  /// não deve derrubar a lista de agendamentos já carregada com sucesso — a
+  /// tela mostra isso via SnackBar/banner e mantém a lista visível.
+  String? mensagemErroAcao;
+
   /// Busca a agenda de [diaSelecionado].
   Future<void> carregar() async {
     status = AgendaStatus.carregando;
@@ -46,15 +52,23 @@ class AgendaViewModel extends ChangeNotifier {
   }
 
   /// Cancela/marca não comparecimento do agendamento [id] e recarrega.
+  ///
+  /// Em caso de falha, expõe [mensagemErroAcao] SEM alterar [status] nem
+  /// [agendamentos]: é um erro de ação pontual, não de carregamento da
+  /// lista, então a lista já exibida deve permanecer intacta.
   Future<void> cancelar(int id, StatusAgendamento status) async {
     try {
       await _repository.cancelar(id, status);
     } on ApiException catch (e) {
-      mensagemErro = e.mensagem;
-      this.status = AgendaStatus.erro;
+      mensagemErroAcao = e.mensagem;
       notifyListeners();
       return;
     }
     await carregar();
+  }
+
+  /// Limpa a mensagem de erro de ação após a tela exibi-la (ex.: SnackBar).
+  void limparErroAcao() {
+    mensagemErroAcao = null;
   }
 }

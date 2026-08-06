@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/enums.dart';
 import '../../data/repositories/agendamento_repository.dart';
 import 'agenda_view_model.dart';
 import 'agendamento_tile.dart';
@@ -47,6 +48,26 @@ class _TelaAgendaDoDiaConteudo extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Checkout chega na Task 23')),
     );
+  }
+
+  /// Cancela via [viewModel] e, se a ação falhar, mostra o erro num
+  /// SnackBar sem mexer na lista já carregada (a falha é da ação pontual,
+  /// não do carregamento da agenda).
+  Future<void> _cancelar(
+    BuildContext context,
+    AgendaViewModel viewModel,
+    int agendamentoId,
+    StatusAgendamento status,
+  ) async {
+    await viewModel.cancelar(agendamentoId, status);
+    if (!context.mounted) return;
+    final erro = viewModel.mensagemErroAcao;
+    if (erro != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(erro)));
+      viewModel.limparErroAcao();
+    }
   }
 
   @override
@@ -120,7 +141,7 @@ class _TelaAgendaDoDiaConteudo extends StatelessWidget {
               agendamento: agendamento,
               aoFinalizar: () => _finalizarStub(context),
               aoCancelar: (status) =>
-                  viewModel.cancelar(agendamento.id, status),
+                  _cancelar(context, viewModel, agendamento.id, status),
             );
           },
         );

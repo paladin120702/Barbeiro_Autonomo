@@ -106,6 +106,37 @@ void main() {
     },
   );
 
+  test(
+    'cancelar com ApiException: NÃO destrói a lista nem o status de '
+    'carregamento, expõe mensagemErroAcao separada',
+    () async {
+      when(
+        repository.buscarAgendaDoDia(any),
+      ).thenAnswer((_) async => [agendamento]);
+      when(repository.cancelar(any, any)).thenAnswer(
+        (_) async => throw const ApiException(mensagem: 'Falha ao cancelar'),
+      );
+
+      final viewModel = AgendaViewModel(repository);
+      await untilCalled(repository.buscarAgendaDoDia(any));
+      expect(viewModel.status, AgendaStatus.sucesso);
+      expect(viewModel.agendamentos, [agendamento]);
+
+      await viewModel.cancelar(1, StatusAgendamento.cancelado);
+
+      // A lista e o status de carregamento, já com sucesso, permanecem
+      // intactos: a falha foi de uma ação pontual, não do carregamento.
+      expect(viewModel.status, AgendaStatus.sucesso);
+      expect(viewModel.agendamentos, [agendamento]);
+      expect(viewModel.mensagemErro, isNull);
+      expect(viewModel.mensagemErroAcao, 'Falha ao cancelar');
+
+      // carregar() não é chamado de novo no caminho de erro (só a 1ª busca
+      // inicial do construtor).
+      verify(repository.buscarAgendaDoDia(any)).called(1);
+    },
+  );
+
   test('toda transição de carregar notifica listeners', () async {
     when(
       repository.buscarAgendaDoDia(any),
