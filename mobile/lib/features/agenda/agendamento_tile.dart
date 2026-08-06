@@ -19,7 +19,7 @@ class AgendamentoTile extends StatelessWidget {
 
   final Agendamento agendamento;
 
-  /// Navega ao checkout (tela real chega na Task 23).
+  /// Navega ao checkout ("Finalizar e Receber").
   final VoidCallback aoFinalizar;
 
   /// Chamada com o status escolhido no dialog de cancelamento

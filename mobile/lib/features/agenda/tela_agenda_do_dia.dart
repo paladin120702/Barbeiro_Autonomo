@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/agendamento.dart';
 import '../../data/models/enums.dart';
 import '../../data/repositories/agendamento_repository.dart';
+import '../checkout/tela_checkout.dart';
 import 'agenda_view_model.dart';
 import 'agendamento_tile.dart';
 
@@ -42,12 +44,22 @@ class _TelaAgendaDoDiaConteudo extends StatelessWidget {
     }
   }
 
-  void _finalizarStub(BuildContext context) {
-    // TODO(Task 23): navegar para a tela real de checkout ("Finalizar e
-    // Receber"), que ainda não existe.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Checkout chega na Task 23')),
+  /// Navega ao checkout ("Finalizar e Receber") de [agendamento]. Se o
+  /// checkout terminar com sucesso (pop com `true`), recarrega a agenda —
+  /// mesmo padrão usado depois de [_cancelar].
+  Future<void> _finalizar(
+    BuildContext context,
+    AgendaViewModel viewModel,
+    Agendamento agendamento,
+  ) async {
+    final sucesso = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => TelaCheckout(agendamento: agendamento),
+      ),
     );
+    if (sucesso == true) {
+      await viewModel.carregar();
+    }
   }
 
   /// Cancela via [viewModel] e, se a ação falhar, mostra o erro num
@@ -139,7 +151,7 @@ class _TelaAgendaDoDiaConteudo extends StatelessWidget {
             final agendamento = viewModel.agendamentos[indice];
             return AgendamentoTile(
               agendamento: agendamento,
-              aoFinalizar: () => _finalizarStub(context),
+              aoFinalizar: () => _finalizar(context, viewModel, agendamento),
               aoCancelar: (status) =>
                   _cancelar(context, viewModel, agendamento.id, status),
             );
