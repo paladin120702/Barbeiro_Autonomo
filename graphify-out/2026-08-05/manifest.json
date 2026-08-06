@@ -1,7 +1,7 @@
 {
   ".claude/settings.json": {
-    "mtime": 1785940008.4646652,
-    "ast_hash": "8beb97e2b810b70c2e02d1d7827e2437",
+    "mtime": 1785940774.0977538,
+    "ast_hash": "d1b6f40ac50b42c2a7c72b2e202b4bd2",
     "semantic_hash": ""
   },
   "backend/mvnw": {
@@ -185,7 +185,7 @@
     "semantic_hash": ""
   },
   "backend/src/main/java/com/seusistema/barbearia/common/ratelimit/RateLimitInterceptor.java": {
-    "mtime": 1785529929.86306,
+    "mtime": 1785947272.6475918,
     "ast_hash": "fe8731828b519d5c5c590a51be5ae699",
     "semantic_hash": ""
   },
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "web/src/App.tsx": {
-    "mtime": 1785853803.7416444,
-    "ast_hash": "c5e44a49ac2a44373fba5d1a7fe35be4",
+    "mtime": 1785947126.4905596,
+    "ast_hash": "09577d401462e220c4c8501b915fe43d",
     "semantic_hash": ""
   },
   "web/src/api/agendamentoPublicoApi.test.ts": {
@@ -490,8 +490,8 @@
     "semantic_hash": ""
   },
   "web/src/main.tsx": {
-    "mtime": 1785853803.7424946,
-    "ast_hash": "787e5a07efeb2bf6209d5937195f2f68",
+    "mtime": 1785943197.5275931,
+    "ast_hash": "d653bea69bcd7e06ace0ee54fb5d0706",
     "semantic_hash": ""
   },
   "web/src/setupTests.ts": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1785940008.4639416,
-    "ast_hash": "82efb97a359f5c7290bf2513d14686be",
+    "mtime": 1785940792.266749,
+    "ast_hash": "21bff917fb7ffc4bffe4e13a80dfd711",
     "semantic_hash": ""
   },
   "MVP-SaaS-Barbearia.md": {
@@ -612,6 +612,26 @@
   "web/src/assets/vite.svg": {
     "mtime": 1785853803.7422323,
     "ast_hash": "9960a24288958394ac50e57ff638b036",
+    "semantic_hash": ""
+  },
+  "web/src/components/EtapaIdentificacao.test.tsx": {
+    "mtime": 1785942527.124134,
+    "ast_hash": "045d6b43cf007e764ff950489d4b63a3",
+    "semantic_hash": ""
+  },
+  "web/src/App.test.tsx": {
+    "mtime": 1785947095.0144765,
+    "ast_hash": "83932498b170494a34317399f07a8a4a",
+    "semantic_hash": ""
+  },
+  "web/src/components/EtapaIdentificacao.tsx": {
+    "mtime": 1785942770.4968505,
+    "ast_hash": "f1f5f4aa53eee8200d0b1f4a96ed5e48",
+    "semantic_hash": ""
+  },
+  "web/src/components/TelaSucesso.tsx": {
+    "mtime": 1785943014.7979028,
+    "ast_hash": "ef2d88092d62062afe23682cafd7ba6d",
     "semantic_hash": ""
   }
 }

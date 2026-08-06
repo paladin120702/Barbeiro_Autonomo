@@ -1126,17 +1126,17 @@
   "questions": [
     {
       "type": "bridge_node",
-      "question": "Why does `BarbeiroService` connect `BarbeiroService` to `Agendamento`, `AgendamentoRepository`, `RateLimitInterceptor`, `IntegrationTestBase`, `ServicoCrudTest`, `JwtService`, `HorarioCrudTest`, `.login`, `AutenticacaoTest`, `.buscar`, `CriarBarbeiroRequest`, `CriarBarbeiroRunner.java`?",
+      "question": "Why does `BarbeiroService` connect `BarbeiroService Criação` to `Agendamento Domain Model`, `Disponibilidade Público API`, `Rate Limit Interceptor`, `Vitrine Pública Integration Tests`, `Serviço CRUD Controller`, `Security Config & JWT Filter`, `Horário CRUD Requests & Tests`, `Barbeiro Login Controller`, `Autenticação Tests`, `Barbeiro Público Controller`, `BarbeiroService Tests`, `Runner Criação Barbeiro Inicial`?",
       "why": "High betweenness centrality (0.096) - this node is a cross-community bridge."
     },
     {
       "type": "bridge_node",
-      "question": "Why does `IntegrationTestBase` connect `IntegrationTestBase` to `Agendamento`, `Servico`, `AgendamentoRepository`, `RateLimitInterceptor`, `HorarioService`, `ServicoCrudTest`, `HorarioFuncionamento`, `HorarioCrudTest`, `DisponibilidadeTest`, `AutenticacaoTest`, `CriarBarbeiroRequest`, `BarbeiroService`?",
+      "question": "Why does `IntegrationTestBase` connect `Vitrine Pública Integration Tests` to `Agendamento Domain Model`, `Cliente Barbeiro Servico Entities`, `Disponibilidade Público API`, `Rate Limit Interceptor`, `Horário Funcionamento DTOs & Repo`, `Serviço CRUD Controller`, `HorarioFuncionamento Entity`, `Horário CRUD Requests & Tests`, `Disponibilidade Service Tests`, `Autenticação Tests`, `BarbeiroService Tests`, `BarbeiroService Criação`?",
       "why": "High betweenness centrality (0.096) - this node is a cross-community bridge."
     },
     {
       "type": "bridge_node",
-      "question": "Why does `RegraDeNegocioException` connect `Agendamento` to `AgendamentoRepository`, `GlobalExceptionHandler`, `HorarioService`, `HorarioFuncionamento`, `ExcecaoHorario`, `CaixaService.java`?",
+      "question": "Why does `RegraDeNegocioException` connect `Agendamento Domain Model` to `Disponibilidade Público API`, `Global Exception Handling`, `Horário Funcionamento DTOs & Repo`, `HorarioFuncionamento Entity`, `ExcecaoHorario Entity`, `Caixa & Forma Pagamento`?",
       "why": "High betweenness centrality (0.040) - this node is a cross-community bridge."
     },
     {
