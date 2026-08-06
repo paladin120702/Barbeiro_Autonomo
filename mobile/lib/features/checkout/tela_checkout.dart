@@ -64,6 +64,7 @@ class _TelaCheckoutConteudo extends StatelessWidget {
               ScaffoldMessenger.of(
                 context,
               ).showSnackBar(SnackBar(content: Text(viewModel.mensagemErro!)));
+              viewModel.limparErro();
             });
           }
 

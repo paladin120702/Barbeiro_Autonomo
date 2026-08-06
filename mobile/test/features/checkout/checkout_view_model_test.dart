@@ -72,4 +72,44 @@ void main() {
     // ter que reselecionar para tentar de novo.
     expect(viewModel.formaSelecionada, FormaPagamento.dinheiro);
   });
+
+  test('limparErro: zera mensagemErro e tira status de erro', () async {
+    when(repository.finalizar(any, any)).thenAnswer(
+      (_) async => throw const ApiException(mensagem: 'Falha ao finalizar'),
+    );
+
+    final viewModel = CheckoutViewModel(repository, agendamento);
+    viewModel.selecionarForma(FormaPagamento.dinheiro);
+    await viewModel.confirmar();
+    expect(viewModel.status, CheckoutStatus.erro);
+    expect(viewModel.mensagemErro, isNotNull);
+
+    viewModel.limparErro();
+
+    expect(viewModel.mensagemErro, isNull);
+    expect(viewModel.status, isNot(CheckoutStatus.erro));
+  });
+
+  test('depois de limparErro, trocar a forma de pagamento não deixa o sinal '
+      'de erro "grudado" (o mesmo SnackBar não deveria reaparecer)', () async {
+    when(repository.finalizar(any, any)).thenAnswer(
+      (_) async => throw const ApiException(mensagem: 'Falha ao finalizar'),
+    );
+
+    final viewModel = CheckoutViewModel(repository, agendamento);
+    viewModel.selecionarForma(FormaPagamento.dinheiro);
+    await viewModel.confirmar();
+    expect(viewModel.status, CheckoutStatus.erro);
+
+    // Tela mostrou o SnackBar e consumiu o erro, como tela_checkout.dart faz
+    // logo após o showSnackBar.
+    viewModel.limparErro();
+
+    // Barbeiro toca em outra forma de pagamento pra tentar de novo — isso só
+    // chama notifyListeners(), sem tocar em status/mensagemErro.
+    viewModel.selecionarForma(FormaPagamento.pix);
+
+    expect(viewModel.status, isNot(CheckoutStatus.erro));
+    expect(viewModel.mensagemErro, isNull);
+  });
 }

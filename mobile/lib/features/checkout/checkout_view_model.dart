@@ -51,4 +51,17 @@ class CheckoutViewModel extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  /// Limpa o sinal de erro após a tela exibi-lo (ex.: SnackBar).
+  ///
+  /// Sem isso, [status] continuaria `erro` indefinidamente e qualquer
+  /// rebuild subsequente do `Consumer` — como o disparado por
+  /// [selecionarForma] ao trocar a forma de pagamento pra tentar de novo —
+  /// reexibiria o mesmo SnackBar antigo, mesmo sem uma nova tentativa ter
+  /// falhado.
+  void limparErro() {
+    mensagemErro = null;
+    status = CheckoutStatus.inicial;
+    notifyListeners();
+  }
 }
