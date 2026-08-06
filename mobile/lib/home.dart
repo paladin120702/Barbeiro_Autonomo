@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'data/repositories/auth_repository.dart';
+import 'features/agenda/tela_agenda_do_dia.dart';
 import 'features/auth/tela_login.dart';
 
 /// Shell de navegação pós-login: `BottomNavigationBar` com as 4 áreas do
-/// app. Nesta task as abas são placeholders — as telas reais chegam nas
-/// Tasks 22-26.
+/// app. Caixa/Serviços/Config ainda são placeholders — chegam nas
+/// Tasks 24-26.
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -18,7 +19,7 @@ class _HomeState extends State<Home> {
   int _abaAtual = 0;
 
   static const _abas = [
-    _AbaPlaceholder(titulo: 'Agenda'),
+    TelaAgendaDoDia(),
     _AbaPlaceholder(titulo: 'Caixa'),
     _AbaPlaceholder(titulo: 'Serviços'),
     _AbaPlaceholder(titulo: 'Config'),

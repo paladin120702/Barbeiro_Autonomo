@@ -1,0 +1,129 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../data/repositories/agendamento_repository.dart';
+import 'agenda_view_model.dart';
+import 'agendamento_tile.dart';
+
+/// Aba "Agenda": lista os agendamentos de [AgendaViewModel.diaSelecionado]
+/// com seletor de dia (setas ±1 dia + `showDatePicker`) e ações de
+/// finalizar/cancelar por agendamento (padrão MVP doc seção 7).
+class TelaAgendaDoDia extends StatelessWidget {
+  const TelaAgendaDoDia({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) =>
+          AgendaViewModel(context.read<AgendamentoRepository>()),
+      child: const _TelaAgendaDoDiaConteudo(),
+    );
+  }
+}
+
+class _TelaAgendaDoDiaConteudo extends StatelessWidget {
+  const _TelaAgendaDoDiaConteudo();
+
+  String _formatarDia(DateTime data) =>
+      '${data.day.toString().padLeft(2, '0')}/'
+      '${data.month.toString().padLeft(2, '0')}/'
+      '${data.year}';
+
+  Future<void> _escolherData(BuildContext context, AgendaViewModel vm) async {
+    final novaData = await showDatePicker(
+      context: context,
+      initialDate: vm.diaSelecionado,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (novaData != null) {
+      await vm.mudarDia(novaData);
+    }
+  }
+
+  void _finalizarStub(BuildContext context) {
+    // TODO(Task 23): navegar para a tela real de checkout ("Finalizar e
+    // Receber"), que ainda não existe.
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Checkout chega na Task 23')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AgendaViewModel>(
+      builder: (context, viewModel, child) {
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left),
+                    tooltip: 'Dia anterior',
+                    onPressed: () => viewModel.mudarDia(
+                      viewModel.diaSelecionado.subtract(
+                        const Duration(days: 1),
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => _escolherData(context, viewModel),
+                    child: Text(
+                      _formatarDia(viewModel.diaSelecionado),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right),
+                    tooltip: 'Próximo dia',
+                    onPressed: () => viewModel.mudarDia(
+                      viewModel.diaSelecionado.add(const Duration(days: 1)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(child: _corpo(context, viewModel)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _corpo(BuildContext context, AgendaViewModel viewModel) {
+    switch (viewModel.status) {
+      case AgendaStatus.carregando:
+        return const Center(child: CircularProgressIndicator());
+      case AgendaStatus.erro:
+        return Center(
+          child: Text(
+            viewModel.mensagemErro ?? 'Erro ao carregar a agenda',
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        );
+      case AgendaStatus.sucesso:
+        if (viewModel.agendamentos.isEmpty) {
+          return const Center(child: Text('Nenhum agendamento neste dia'));
+        }
+        return ListView.builder(
+          itemCount: viewModel.agendamentos.length,
+          itemBuilder: (context, indice) {
+            final agendamento = viewModel.agendamentos[indice];
+            return AgendamentoTile(
+              agendamento: agendamento,
+              aoFinalizar: () => _finalizarStub(context),
+              aoCancelar: (status) =>
+                  viewModel.cancelar(agendamento.id, status),
+            );
+          },
+        );
+    }
+  }
+}
