@@ -5,10 +5,11 @@ import 'data/repositories/auth_repository.dart';
 import 'features/agenda/tela_agenda_do_dia.dart';
 import 'features/auth/tela_login.dart';
 import 'features/caixa/tela_caixa.dart';
+import 'features/configuracao/tela_configuracao.dart';
 import 'features/servicos/tela_servicos.dart';
 
 /// Shell de navegação pós-login: `BottomNavigationBar` com as 4 áreas do
-/// app. Config ainda é placeholder — chega na Task 26.
+/// app.
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -23,7 +24,7 @@ class _HomeState extends State<Home> {
     TelaAgendaDoDia(),
     TelaCaixa(),
     TelaServicos(),
-    _AbaPlaceholder(titulo: 'Config'),
+    TelaConfiguracao(),
   ];
 
   Future<void> _sair(BuildContext context) async {
@@ -68,16 +69,5 @@ class _HomeState extends State<Home> {
         ],
       ),
     );
-  }
-}
-
-class _AbaPlaceholder extends StatelessWidget {
-  const _AbaPlaceholder({required this.titulo});
-
-  final String titulo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text(titulo));
   }
 }

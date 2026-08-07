@@ -1,6 +1,6 @@
 # Barbearia — SaaS de Agendamento
 
-SaaS de agendamento para barbeiro individual: backend Spring Boot com vitrine pública, agenda, caixa e proteção contra agendamento duplicado; web React (vitrine pública, sem login); app Flutter de gestão (Fases 2 e 3, ainda não implementadas). Detalhes completos da arquitetura e das decisões de design em [`MVP-SaaS-Barbearia.md`](MVP-SaaS-Barbearia.md).
+SaaS de agendamento para barbeiro individual: backend Spring Boot com vitrine pública, agenda, caixa e proteção contra agendamento duplicado; web React (vitrine pública, sem login); app Flutter de gestão (agenda, checkout, caixa, serviços e configuração de horários). Detalhes completos da arquitetura e das decisões de design em [`MVP-SaaS-Barbearia.md`](MVP-SaaS-Barbearia.md).
 
 ## Pré-requisitos
 
@@ -44,6 +44,27 @@ cd backend
 ```
 
 Requer Docker (Testcontainers sobe um Postgres efêmero por execução). Suíte de integração completa — sem mocks de banco.
+
+## Rodar o app mobile
+
+```bash
+cd mobile
+flutter pub get
+flutter run --dart-define=API_URL=http://10.0.2.2:8080
+```
+
+`10.0.2.2` é o alias do host da máquina a partir do emulador Android (o backend deve estar rodando localmente na porta 8080). Login com o barbeiro de seed (`dev@barbearia.local` / `senha123`).
+
+App Flutter com arquitetura MVVM: cada aba (`agenda`, `checkout`, `caixa`, `servicos`, `configuracao`, `auth`) tem sua pasta em `lib/features/`, com um `*_view_model.dart` (`ChangeNotifier`, sem dependência de widgets) e uma ou mais telas (`tela_*.dart`) que só leem o view model e disparam ações — sem lógica de negócio na view. `lib/data/repositories/` concentra as chamadas HTTP (via `Dio`) e `lib/data/models/` os DTOs (`fromJson`/`toJson`) espelhando o backend. `lib/core/` tem o cliente HTTP (interceptors de token e conversão de erro para `ApiException`) e o armazenamento seguro do token.
+
+### Rodar os testes do mobile
+
+```bash
+cd mobile
+flutter test
+```
+
+Testes de `ViewModel` usam `mockito` (mocks gerados com `dart run build_runner build --delete-conflicting-outputs`) — sem chamadas HTTP reais.
 
 ## Endpoints principais
 
