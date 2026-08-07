@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:barbearia_app/core/errors/api_exception.dart';
 import 'package:barbearia_app/data/repositories/auth_repository.dart';
 import 'package:barbearia_app/features/auth/login_view_model.dart';
@@ -29,14 +31,16 @@ void main() {
 
       expect(viewModel.status, LoginStatus.carregando);
 
-      await future;
+      final sucesso = await future;
 
+      expect(sucesso, isTrue);
       expect(viewModel.status, LoginStatus.sucesso);
       expect(notificacoes, greaterThanOrEqualTo(2));
     },
   );
 
-  test('entrar com ApiException: status erro e mensagemErro exposta', () async {
+  test('entrar com ApiException: retorna false, status erro e mensagemErro '
+      'exposta', () async {
     when(repository.login(any, any)).thenAnswer(
       (_) async =>
           throw const ApiException(mensagem: 'E-mail ou senha inválidos'),
@@ -45,10 +49,28 @@ void main() {
     var notificacoes = 0;
     viewModel.addListener(() => notificacoes++);
 
-    await viewModel.entrar('teste@teste.com', 'senha-errada');
+    final sucesso = await viewModel.entrar('teste@teste.com', 'senha-errada');
 
+    expect(sucesso, isFalse);
     expect(viewModel.status, LoginStatus.erro);
     expect(viewModel.mensagemErro, 'E-mail ou senha inválidos');
     expect(notificacoes, greaterThanOrEqualTo(2));
   });
+
+  test(
+    'notificar depois de dispose() não lança (guard de BaseViewModel)',
+    () async {
+      final respostaControlada = Completer<void>();
+      when(
+        repository.login(any, any),
+      ).thenAnswer((_) => respostaControlada.future);
+
+      final future = viewModel.entrar('teste@teste.com', 'senha123');
+
+      viewModel.dispose();
+      respostaControlada.complete();
+
+      await expectLater(future, completes);
+    },
+  );
 }

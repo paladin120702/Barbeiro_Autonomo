@@ -42,6 +42,31 @@ class _TelaLoginFormState extends State<_TelaLoginForm> {
     super.dispose();
   }
 
+  /// Entra via [viewModel] e, depois do `await`, navega para [Home] em
+  /// caso de sucesso ou mostra o erro num SnackBar. Rodar isso aqui — e não
+  /// dentro do `builder` do `Consumer` — evita que um rebuild qualquer (ex.:
+  /// girar o aparelho) reexiba o SnackBar de uma tentativa antiga.
+  Future<void> _entrar(BuildContext context, LoginViewModel viewModel) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final sucesso = await viewModel.entrar(
+      _emailController.text,
+      _senhaController.text,
+    );
+    if (!context.mounted) return;
+
+    if (sucesso) {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const Home()));
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(viewModel.mensagemErro ?? 'Erro ao entrar')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,25 +74,6 @@ class _TelaLoginFormState extends State<_TelaLoginForm> {
       body: Consumer<LoginViewModel>(
         builder: (context, viewModel, child) {
           final carregando = viewModel.status == LoginStatus.carregando;
-
-          if (viewModel.status == LoginStatus.erro &&
-              viewModel.mensagemErro != null) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(viewModel.mensagemErro!)));
-            });
-          }
-
-          if (viewModel.status == LoginStatus.sucesso) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!context.mounted) return;
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const Home()),
-              );
-            });
-          }
 
           return Padding(
             padding: const EdgeInsets.all(24),
@@ -108,14 +114,7 @@ class _TelaLoginFormState extends State<_TelaLoginForm> {
                   ElevatedButton(
                     onPressed: carregando
                         ? null
-                        : () {
-                            if (_formKey.currentState!.validate()) {
-                              viewModel.entrar(
-                                _emailController.text,
-                                _senhaController.text,
-                              );
-                            }
-                          },
+                        : () => _entrar(context, viewModel),
                     child: carregando
                         ? const SizedBox(
                             width: 20,

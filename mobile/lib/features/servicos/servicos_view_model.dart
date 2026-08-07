@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart';
-
+import '../../core/base_view_model.dart';
 import '../../core/errors/api_exception.dart';
 import '../../data/models/servico.dart';
 import '../../data/repositories/servico_repository.dart';
@@ -9,7 +8,7 @@ enum ServicosStatus { carregando, sucesso, erro }
 
 /// ViewModel da aba "Serviços": lista os serviços via [ServicoRepository] e
 /// expõe as ações de criar/editar ([salvar]) e remover ([excluir]).
-class ServicosViewModel extends ChangeNotifier {
+class ServicosViewModel extends BaseViewModel {
   ServicosViewModel(this._repository) {
     carregar();
   }
@@ -29,7 +28,7 @@ class ServicosViewModel extends ChangeNotifier {
   Future<void> carregar() async {
     status = ServicosStatus.carregando;
     mensagemErro = null;
-    notifyListeners();
+    notificarSeAtivo();
 
     try {
       servicos = await _repository.listar();
@@ -38,7 +37,7 @@ class ServicosViewModel extends ChangeNotifier {
       mensagemErro = e.mensagem;
       status = ServicosStatus.erro;
     }
-    notifyListeners();
+    notificarSeAtivo();
   }
 
   /// Cria (sem [id]) ou atualiza (com [id]) um serviço e recarrega a lista.
@@ -59,7 +58,7 @@ class ServicosViewModel extends ChangeNotifier {
       }
     } on ApiException catch (e) {
       mensagemErro = e.mensagem;
-      notifyListeners();
+      notificarSeAtivo();
       return false;
     }
     await carregar();
@@ -76,7 +75,7 @@ class ServicosViewModel extends ChangeNotifier {
       await _repository.excluir(id);
     } on ApiException catch (e) {
       mensagemErro = e.mensagem;
-      notifyListeners();
+      notificarSeAtivo();
       return false;
     }
     await carregar();

@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart';
-
+import '../../core/base_view_model.dart';
 import '../../core/errors/api_exception.dart';
 import '../../data/models/excecao_horario.dart';
 import '../../data/models/horario_funcionamento.dart';
@@ -18,7 +17,7 @@ enum ConfiguracaoStatus { carregando, sucesso, erro }
 /// `ApiException` expõe [mensagemErro] e retorna `false` SEM alterar
 /// [status]/[horarios]/[excecoes] já carregados — erro de uma ação pontual
 /// não deve derrubar a tela inteira.
-class ConfiguracaoViewModel extends ChangeNotifier {
+class ConfiguracaoViewModel extends BaseViewModel {
   ConfiguracaoViewModel(this._repository) {
     carregar();
   }
@@ -38,7 +37,7 @@ class ConfiguracaoViewModel extends ChangeNotifier {
   Future<void> carregar() async {
     status = ConfiguracaoStatus.carregando;
     mensagemErro = null;
-    notifyListeners();
+    notificarSeAtivo();
 
     try {
       final resultados = await Future.wait([
@@ -52,7 +51,7 @@ class ConfiguracaoViewModel extends ChangeNotifier {
       mensagemErro = e.mensagem;
       status = ConfiguracaoStatus.erro;
     }
-    notifyListeners();
+    notificarSeAtivo();
   }
 
   /// Cria (sem [id]) ou atualiza (com [id]) um horário de funcionamento e
@@ -80,7 +79,7 @@ class ConfiguracaoViewModel extends ChangeNotifier {
       }
     } on ApiException catch (e) {
       mensagemErro = e.mensagem;
-      notifyListeners();
+      notificarSeAtivo();
       return false;
     }
     await carregar();
@@ -93,7 +92,7 @@ class ConfiguracaoViewModel extends ChangeNotifier {
       await _repository.excluirHorario(id);
     } on ApiException catch (e) {
       mensagemErro = e.mensagem;
-      notifyListeners();
+      notificarSeAtivo();
       return false;
     }
     await carregar();
@@ -115,7 +114,7 @@ class ConfiguracaoViewModel extends ChangeNotifier {
       await _repository.criarExcecao(data, disponivel, horaInicio, horaFim);
     } on ApiException catch (e) {
       mensagemErro = e.mensagem;
-      notifyListeners();
+      notificarSeAtivo();
       return false;
     }
     await carregar();
@@ -128,7 +127,7 @@ class ConfiguracaoViewModel extends ChangeNotifier {
       await _repository.excluirExcecao(id);
     } on ApiException catch (e) {
       mensagemErro = e.mensagem;
-      notifyListeners();
+      notificarSeAtivo();
       return false;
     }
     await carregar();

@@ -41,6 +41,28 @@ class _TelaCheckoutConteudo extends StatelessWidget {
     FormaPagamento.credito => 'Crédito',
   };
 
+  /// Confirma via [viewModel] e, depois do `await`, faz `pop(true)` em caso
+  /// de sucesso ou mostra o erro num SnackBar. Rodar isso aqui — e não
+  /// dentro do `builder` do `Consumer` — evita que um rebuild qualquer
+  /// (ex.: trocar a forma de pagamento pra tentar de novo) reexiba o
+  /// SnackBar de uma tentativa antiga.
+  Future<void> _confirmar(
+    BuildContext context,
+    CheckoutViewModel viewModel,
+  ) async {
+    final sucesso = await viewModel.confirmar();
+    if (!context.mounted) return;
+
+    if (sucesso) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(viewModel.mensagemErro ?? 'Erro ao confirmar')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,24 +71,6 @@ class _TelaCheckoutConteudo extends StatelessWidget {
         builder: (context, viewModel, child) {
           final agendamento = viewModel.agendamento;
           final enviando = viewModel.status == CheckoutStatus.enviando;
-
-          if (viewModel.status == CheckoutStatus.sucesso) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!context.mounted) return;
-              Navigator.of(context).pop(true);
-            });
-          }
-
-          if (viewModel.status == CheckoutStatus.erro &&
-              viewModel.mensagemErro != null) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(viewModel.mensagemErro!)));
-              viewModel.limparErro();
-            });
-          }
 
           return Padding(
             padding: const EdgeInsets.all(24),
@@ -129,7 +133,7 @@ class _TelaCheckoutConteudo extends StatelessWidget {
                 ElevatedButton(
                   onPressed: (viewModel.formaSelecionada == null || enviando)
                       ? null
-                      : () => viewModel.confirmar(),
+                      : () => _confirmar(context, viewModel),
                   child: enviando
                       ? const SizedBox(
                           width: 20,

@@ -1,17 +1,25 @@
-import 'package:flutter/foundation.dart';
-
+import '../../core/base_view_model.dart';
 import '../../core/errors/api_exception.dart';
 import '../../data/models/agendamento.dart';
 import '../../data/models/enums.dart';
 import '../../data/repositories/agendamento_repository.dart';
 
 /// Estado da tela de checkout.
-enum CheckoutStatus { inicial, enviando, sucesso, erro }
+///
+/// Não existe um valor `erro`: uma falha em [CheckoutViewModel.confirmar]
+/// é sinalizada só pelo retorno `false` do método (consumido uma única vez
+/// pela View logo após o `await`) e por [CheckoutViewModel.mensagemErro] —
+/// o status volta a [CheckoutStatus.inicial], reabilitando o formulário
+/// para nova tentativa. Um valor `erro` que sobrevivesse no estado exigiria
+/// ser limpo manualmente (como [CheckoutViewModel.confirmar] costumava
+/// exigir com um `limparErro()`), reabrindo espaço para o mesmo SnackBar
+/// reaparecer num rebuild sem uma nova tentativa ter falhado.
+enum CheckoutStatus { inicial, enviando, sucesso }
 
 /// ViewModel do checkout ("Finalizar e Receber"): confirma o pagamento de
 /// [agendamento] via [AgendamentoRepository.finalizar] (fluxo da seção 8 do
 /// MVP doc).
-class CheckoutViewModel extends ChangeNotifier {
+class CheckoutViewModel extends BaseViewModel {
   CheckoutViewModel(this._repository, this.agendamento);
 
   final AgendamentoRepository _repository;
@@ -24,44 +32,36 @@ class CheckoutViewModel extends ChangeNotifier {
   /// Seleciona a forma de pagamento escolhida na tela.
   void selecionarForma(FormaPagamento forma) {
     formaSelecionada = forma;
-    notifyListeners();
+    notificarSeAtivo();
   }
 
-  /// Confirma o checkout com [formaSelecionada]. Não faz nada se nenhuma
-  /// forma foi escolhida ainda (o botão "Confirmar" já fica desabilitado
-  /// nesse caso, isto é uma segunda barreira).
+  /// Confirma o checkout com [formaSelecionada]. Não faz nada e retorna
+  /// `false` se nenhuma forma foi escolhida ainda (o botão "Confirmar" já
+  /// fica desabilitado nesse caso, isto é uma segunda barreira).
   ///
-  /// Em caso de falha, [formaSelecionada] é preservada — o barbeiro não
-  /// deveria ter que reselecionar a forma de pagamento só para tentar de
-  /// novo.
-  Future<void> confirmar() async {
+  /// Retorna `true` em caso de sucesso; a View decide o que fazer com o
+  /// resultado (pop/SnackBar) depois do `await`. Em caso de falha,
+  /// [formaSelecionada] é preservada — o barbeiro não deveria ter que
+  /// reselecionar a forma de pagamento só para tentar de novo.
+  Future<bool> confirmar() async {
     final forma = formaSelecionada;
-    if (forma == null) return;
+    if (forma == null) return false;
 
     status = CheckoutStatus.enviando;
     mensagemErro = null;
-    notifyListeners();
+    notificarSeAtivo();
 
     try {
       await _repository.finalizar(agendamento.id, forma);
-      status = CheckoutStatus.sucesso;
     } on ApiException catch (e) {
       mensagemErro = e.mensagem;
-      status = CheckoutStatus.erro;
+      status = CheckoutStatus.inicial;
+      notificarSeAtivo();
+      return false;
     }
-    notifyListeners();
-  }
 
-  /// Limpa o sinal de erro após a tela exibi-lo (ex.: SnackBar).
-  ///
-  /// Sem isso, [status] continuaria `erro` indefinidamente e qualquer
-  /// rebuild subsequente do `Consumer` — como o disparado por
-  /// [selecionarForma] ao trocar a forma de pagamento pra tentar de novo —
-  /// reexibiria o mesmo SnackBar antigo, mesmo sem uma nova tentativa ter
-  /// falhado.
-  void limparErro() {
-    mensagemErro = null;
-    status = CheckoutStatus.inicial;
-    notifyListeners();
+    status = CheckoutStatus.sucesso;
+    notificarSeAtivo();
+    return true;
   }
 }

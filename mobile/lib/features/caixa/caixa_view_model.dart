@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart';
-
+import '../../core/base_view_model.dart';
 import '../../core/errors/api_exception.dart';
 import '../../data/models/caixa.dart';
 import '../../data/repositories/caixa_repository.dart';
@@ -12,7 +11,7 @@ enum PeriodoCaixa { dia, mes }
 
 /// ViewModel da aba "Caixa": consulta os totais recebidos (por forma de
 /// pagamento) do [periodo] e [referencia] atuais via [CaixaRepository].
-class CaixaViewModel extends ChangeNotifier {
+class CaixaViewModel extends BaseViewModel {
   CaixaViewModel(this._repository) {
     carregar();
   }
@@ -25,23 +24,41 @@ class CaixaViewModel extends ChangeNotifier {
   Caixa? caixa;
   String? mensagemErro;
 
+  /// Conta as chamadas de [carregar] para descartar respostas antigas que
+  /// cheguem depois de uma mais nova (ex.: trocar rápido entre dia/mês ou
+  /// entre datas de referência). Sem isso, o estado final seria o da
+  /// resposta que chegou por último, não o da chamada disparada por último.
+  int _geracao = 0;
+
   /// Consulta o caixa de [referencia] conforme [periodo]: `consultarDia`
   /// para [PeriodoCaixa.dia], `consultarMes` para [PeriodoCaixa.mes].
   Future<void> carregar() async {
+    final geracao = ++_geracao;
     status = CaixaStatus.carregando;
     mensagemErro = null;
-    notifyListeners();
+    notificarSeAtivo();
 
+    Caixa? resultado;
+    String? erro;
     try {
-      caixa = periodo == PeriodoCaixa.dia
+      resultado = periodo == PeriodoCaixa.dia
           ? await _repository.consultarDia(referencia)
           : await _repository.consultarMes(referencia);
-      status = CaixaStatus.sucesso;
     } on ApiException catch (e) {
-      mensagemErro = e.mensagem;
-      status = CaixaStatus.erro;
+      erro = e.mensagem;
     }
-    notifyListeners();
+
+    // Uma chamada mais nova já assumiu o estado; esta resposta está velha.
+    if (geracao != _geracao) return;
+
+    if (erro != null) {
+      mensagemErro = erro;
+      status = CaixaStatus.erro;
+    } else {
+      caixa = resultado;
+      status = CaixaStatus.sucesso;
+    }
+    notificarSeAtivo();
   }
 
   /// Troca o período (dia/mês) e recarrega.

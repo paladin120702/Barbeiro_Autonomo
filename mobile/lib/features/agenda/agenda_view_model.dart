@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart';
-
+import '../../core/base_view_model.dart';
 import '../../core/errors/api_exception.dart';
 import '../../data/models/agendamento.dart';
 import '../../data/models/enums.dart';
@@ -11,7 +10,7 @@ enum AgendaStatus { carregando, sucesso, erro }
 /// ViewModel da agenda do dia: busca os agendamentos de [diaSelecionado] via
 /// [AgendamentoRepository] e expõe ações de troca de dia e
 /// cancelamento/no-show (padrão da seção 7 do MVP doc).
-class AgendaViewModel extends ChangeNotifier {
+class AgendaViewModel extends BaseViewModel {
   AgendaViewModel(this._repository) {
     carregar();
   }
@@ -23,26 +22,38 @@ class AgendaViewModel extends ChangeNotifier {
   List<Agendamento> agendamentos = [];
   String? mensagemErro;
 
-  /// Mensagem de erro de uma ação pontual (cancelar/no-show), separada de
-  /// [mensagemErro] (erro de carregamento da lista inteira). Uma falha aqui
-  /// não deve derrubar a lista de agendamentos já carregada com sucesso — a
-  /// tela mostra isso via SnackBar/banner e mantém a lista visível.
-  String? mensagemErroAcao;
+  /// Conta as chamadas de [carregar] para descartar respostas antigas que
+  /// cheguem depois de uma mais nova (ex.: barbeiro toca a seta de próximo
+  /// dia 3x rápido). Sem isso, o estado final seria o da resposta que
+  /// chegou por último, não o da chamada disparada por último.
+  int _geracao = 0;
 
   /// Busca a agenda de [diaSelecionado].
   Future<void> carregar() async {
+    final geracao = ++_geracao;
     status = AgendaStatus.carregando;
     mensagemErro = null;
-    notifyListeners();
+    notificarSeAtivo();
 
+    List<Agendamento>? resultado;
+    String? erro;
     try {
-      agendamentos = await _repository.buscarAgendaDoDia(diaSelecionado);
-      status = AgendaStatus.sucesso;
+      resultado = await _repository.buscarAgendaDoDia(diaSelecionado);
     } on ApiException catch (e) {
-      mensagemErro = e.mensagem;
-      status = AgendaStatus.erro;
+      erro = e.mensagem;
     }
-    notifyListeners();
+
+    // Uma chamada mais nova já assumiu o estado; esta resposta está velha.
+    if (geracao != _geracao) return;
+
+    if (erro != null) {
+      mensagemErro = erro;
+      status = AgendaStatus.erro;
+    } else {
+      agendamentos = resultado!;
+      status = AgendaStatus.sucesso;
+    }
+    notificarSeAtivo();
   }
 
   /// Troca o dia selecionado e recarrega a agenda.
@@ -53,22 +64,19 @@ class AgendaViewModel extends ChangeNotifier {
 
   /// Cancela/marca não comparecimento do agendamento [id] e recarrega.
   ///
-  /// Em caso de falha, expõe [mensagemErroAcao] SEM alterar [status] nem
-  /// [agendamentos]: é um erro de ação pontual, não de carregamento da
-  /// lista, então a lista já exibida deve permanecer intacta.
-  Future<void> cancelar(int id, StatusAgendamento status) async {
+  /// Em caso de falha, expõe [mensagemErro] e retorna `false` SEM alterar
+  /// [status] nem [agendamentos]: é um erro de ação pontual, não de
+  /// carregamento da lista, então a lista já exibida deve permanecer
+  /// intacta.
+  Future<bool> cancelar(int id, StatusAgendamento status) async {
     try {
       await _repository.cancelar(id, status);
     } on ApiException catch (e) {
-      mensagemErroAcao = e.mensagem;
-      notifyListeners();
-      return;
+      mensagemErro = e.mensagem;
+      notificarSeAtivo();
+      return false;
     }
     await carregar();
-  }
-
-  /// Limpa a mensagem de erro de ação após a tela exibi-la (ex.: SnackBar).
-  void limparErroAcao() {
-    mensagemErroAcao = null;
+    return true;
   }
 }

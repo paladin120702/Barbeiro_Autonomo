@@ -71,15 +71,11 @@ class _TelaAgendaDoDiaConteudo extends StatelessWidget {
     int agendamentoId,
     StatusAgendamento status,
   ) async {
-    await viewModel.cancelar(agendamentoId, status);
-    if (!context.mounted) return;
-    final erro = viewModel.mensagemErroAcao;
-    if (erro != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(erro)));
-      viewModel.limparErroAcao();
-    }
+    final sucesso = await viewModel.cancelar(agendamentoId, status);
+    if (!context.mounted || sucesso) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(viewModel.mensagemErro ?? 'Erro ao cancelar')),
+    );
   }
 
   @override
