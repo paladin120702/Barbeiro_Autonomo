@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 import 'data/repositories/auth_repository.dart';
 import 'features/agenda/tela_agenda_do_dia.dart';
 import 'features/auth/tela_login.dart';
+import 'features/caixa/tela_caixa.dart';
 
 /// Shell de navegação pós-login: `BottomNavigationBar` com as 4 áreas do
-/// app. Caixa/Serviços/Config ainda são placeholders — chegam nas
-/// Tasks 24-26.
+/// app. Serviços/Config ainda são placeholders — chegam na Task 25/26.
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -20,7 +20,7 @@ class _HomeState extends State<Home> {
 
   static const _abas = [
     TelaAgendaDoDia(),
-    _AbaPlaceholder(titulo: 'Caixa'),
+    TelaCaixa(),
     _AbaPlaceholder(titulo: 'Serviços'),
     _AbaPlaceholder(titulo: 'Config'),
   ];
