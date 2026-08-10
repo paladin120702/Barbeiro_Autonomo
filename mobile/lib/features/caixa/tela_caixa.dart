@@ -3,24 +3,19 @@ import 'package:provider/provider.dart';
 
 import '../../core/formatadores.dart';
 import '../../data/models/enums.dart';
-import '../../data/repositories/caixa_repository.dart';
 import 'caixa_view_model.dart';
 
 /// Aba "Caixa": totais recebidos por dia ou mês, com o detalhamento por
 /// forma de pagamento.
 ///
-/// Cria seu próprio [CaixaViewModel] via [ChangeNotifierProvider], lendo
-/// [CaixaRepository] do escopo global (mesmo padrão de `TelaAgendaDoDia`).
+/// O [CaixaViewModel] vem do `Home` (ver a documentação de lá), não é criado
+/// aqui: criado aqui, ele seria descartado a cada troca de aba e o período
+/// dia/mês escolhido voltaria ao padrão.
 class TelaCaixa extends StatelessWidget {
   const TelaCaixa({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => CaixaViewModel(context.read<CaixaRepository>()),
-      child: const _TelaCaixaConteudo(),
-    );
-  }
+  Widget build(BuildContext context) => const _TelaCaixaConteudo();
 }
 
 class _TelaCaixaConteudo extends StatelessWidget {

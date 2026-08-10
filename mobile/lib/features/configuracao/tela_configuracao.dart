@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../core/formatadores.dart';
 import '../../data/models/excecao_horario.dart';
 import '../../data/models/horario_funcionamento.dart';
-import '../../data/repositories/horario_repository.dart';
 import 'configuracao_view_model.dart';
 import 'tela_excecao_form.dart';
 import 'tela_horario_form.dart';
@@ -12,23 +11,16 @@ import 'tela_horario_form.dart';
 /// Aba "Configuração": horário de funcionamento semanal (dom…sáb) e exceções
 /// futuras (folgas/horários especiais).
 ///
-/// Cria seu próprio [ConfiguracaoViewModel] via [ChangeNotifierProvider],
-/// lendo [HorarioRepository] do escopo global (mesmo padrão de
-/// `TelaServicos`). É a única instância da aba: ao abrir um formulário
-/// (horário ou exceção), compartilha essa mesma instância via
+/// O [ConfiguracaoViewModel] vem do `Home` (ver a documentação de lá), não é
+/// criado aqui. Continua sendo a única instância da aba: ao abrir um
+/// formulário (horário ou exceção), ela é repassada via
 /// `ChangeNotifierProvider.value` — assim `salvarHorario`/`salvarExcecao` do
 /// formulário recarregam as listas já em tela.
 class TelaConfiguracao extends StatelessWidget {
   const TelaConfiguracao({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) =>
-          ConfiguracaoViewModel(context.read<HorarioRepository>()),
-      child: const _TelaConfiguracaoConteudo(),
-    );
-  }
+  Widget build(BuildContext context) => const _TelaConfiguracaoConteudo();
 }
 
 class _TelaConfiguracaoConteudo extends StatelessWidget {

@@ -1,3 +1,4 @@
+import 'package:barbearia_app/core/formatadores.dart';
 import 'package:barbearia_app/data/models/caixa.dart';
 import 'package:barbearia_app/data/repositories/agendamento_repository.dart';
 import 'package:barbearia_app/data/repositories/auth_repository.dart';
@@ -100,18 +101,47 @@ void main() {
     expect(find.byType(TelaCaixa), findsNothing);
   });
 
-  testWidgets('trocar de aba e voltar descarta e recria a tela, refazendo a '
-      'requisição — comportamento ATUAL (`body: _abas[_abaAtual]`), não o '
-      'desejado; está no backlog trocar por IndexedStack', (tester) async {
+  testWidgets('trocar de aba e voltar PRESERVA o dia selecionado e recarrega '
+      'esse mesmo dia — o ViewModel vive no Home, e a volta dispara '
+      'carregar() sem resetar a seleção', (tester) async {
     await tester.pumpWidget(montar());
     await tester.pumpAndSettle();
+
+    // Sai de hoje: avança um dia na Agenda.
+    await tester.tap(find.byTooltip('Próximo dia'));
+    await tester.pumpAndSettle();
+
+    final diaEscolhido =
+        verify(agendamentos.buscarAgendaDoDia(captureAny)).captured.last
+            as DateTime;
 
     await tester.tap(find.text('Caixa'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Agenda'));
     await tester.pumpAndSettle();
 
-    verify(agendamentos.buscarAgendaDoDia(any)).called(2);
+    // Recarregou (dado fresco) e com o MESMO dia (seleção preservada) — se o
+    // ViewModel fosse recriado na troca de aba, voltaria para hoje.
+    final diaDaRecarga =
+        verify(agendamentos.buscarAgendaDoDia(captureAny)).captured.single
+            as DateTime;
+    expect(diaDaRecarga, diaEscolhido);
+    expect(find.text(formatarData(diaEscolhido)), findsOneWidget);
+  });
+
+  testWidgets('a primeira visita a uma aba carrega uma vez só: quem carrega é '
+      'o construtor do ViewModel (criado sob demanda), e o Home não '
+      'recarrega por cima', (tester) async {
+    await tester.pumpWidget(montar());
+    await tester.pumpAndSettle();
+
+    // Caixa nunca foi aberto: o provider é preguiçoso, então nada foi pedido.
+    verifyNever(caixa.consultarDia(any));
+
+    await tester.tap(find.text('Caixa'));
+    await tester.pumpAndSettle();
+
+    verify(caixa.consultarDia(any)).called(1);
   });
 
   testWidgets('logout limpa a sessão e volta pro login, sem deixar a Home '

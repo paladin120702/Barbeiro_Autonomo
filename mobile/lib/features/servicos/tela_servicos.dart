@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../core/formatadores.dart';
 import '../../data/models/servico.dart';
-import '../../data/repositories/servico_repository.dart';
 import 'servicos_view_model.dart';
 import 'tela_servico_form.dart';
 
@@ -11,22 +10,16 @@ import 'tela_servico_form.dart';
 /// FAB para criar um novo, tap para editar e ícone de exclusão (com
 /// confirmação) por item.
 ///
-/// Cria seu próprio [ServicosViewModel] via [ChangeNotifierProvider], lendo
-/// [ServicoRepository] do escopo global (mesmo padrão de `TelaCaixa`). É a
-/// única instância do `ServicosViewModel` da aba: ao abrir o formulário
-/// (criar/editar), compartilha essa mesma instância via
+/// O [ServicosViewModel] vem do `Home` (ver a documentação de lá), não é
+/// criado aqui. Continua sendo a única instância da aba: ao abrir o
+/// formulário (criar/editar), ela é repassada via
 /// `ChangeNotifierProvider.value` — assim o `salvar` do formulário recarrega
 /// a lista já em tela em vez de duplicar uma busca à parte.
 class TelaServicos extends StatelessWidget {
   const TelaServicos({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ServicosViewModel(context.read<ServicoRepository>()),
-      child: const _TelaServicosConteudo(),
-    );
-  }
+  Widget build(BuildContext context) => const _TelaServicosConteudo();
 }
 
 class _TelaServicosConteudo extends StatelessWidget {

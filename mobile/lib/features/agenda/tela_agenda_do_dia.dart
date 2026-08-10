@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../core/formatadores.dart';
 import '../../data/models/agendamento.dart';
 import '../../data/models/enums.dart';
-import '../../data/repositories/agendamento_repository.dart';
 import '../checkout/tela_checkout.dart';
 import 'agenda_view_model.dart';
 import 'agendamento_tile.dart';
@@ -12,17 +11,15 @@ import 'agendamento_tile.dart';
 /// Aba "Agenda": lista os agendamentos de [AgendaViewModel.diaSelecionado]
 /// com seletor de dia (setas ±1 dia + `showDatePicker`) e ações de
 /// finalizar/cancelar por agendamento (padrão MVP doc seção 7).
+///
+/// O [AgendaViewModel] vem do `Home` (ver a documentação de lá), não é
+/// criado aqui: criado aqui, ele seria descartado a cada troca de aba e o
+/// dia selecionado voltaria para hoje.
 class TelaAgendaDoDia extends StatelessWidget {
   const TelaAgendaDoDia({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) =>
-          AgendaViewModel(context.read<AgendamentoRepository>()),
-      child: const _TelaAgendaDoDiaConteudo(),
-    );
-  }
+  Widget build(BuildContext context) => const _TelaAgendaDoDiaConteudo();
 }
 
 class _TelaAgendaDoDiaConteudo extends StatelessWidget {
