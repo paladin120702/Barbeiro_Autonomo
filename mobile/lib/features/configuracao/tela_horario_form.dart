@@ -77,7 +77,13 @@ class _TelaHorarioFormState extends State<TelaHorarioForm> {
       diaSemana: _diaSemana,
       horaInicio: formatarHoraDoDia(_horaInicio),
       horaFim: formatarHoraDoDia(_horaFim),
-      ativo: widget.horario?.ativo ?? true,
+      // Sempre `true`, mesmo editando um registro que veio com `ativo:false`
+      // (estado alcançável pela API, não pelo app). Desde que a grade passou
+      // a listar registros inativos, propagar `?? widget.horario?.ativo`
+      // deixaria o dia preso em "Fechado": o barbeiro salvaria 09:00–18:00,
+      // veria "Fechado" de novo e não teria nenhum caminho na UI pra
+      // reativar. Salvar um horário É a intenção de abrir o dia.
+      ativo: true,
     );
 
     if (!context.mounted) return;

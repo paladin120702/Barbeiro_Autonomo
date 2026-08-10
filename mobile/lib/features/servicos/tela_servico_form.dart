@@ -39,7 +39,9 @@ class _TelaServicoFormState extends State<TelaServicoForm> {
     final servico = widget.servico;
     _nomeController = TextEditingController(text: servico?.nome ?? '');
     _precoController = TextEditingController(
-      text: servico == null ? '' : servico.preco.toStringAsFixed(2),
+      text: servico == null
+          ? ''
+          : servico.preco.toStringAsFixed(2).replaceAll('.', ','),
     );
     _duracaoController = TextEditingController(
       text: (servico?.duracaoMinutos ?? 60).toString(),
@@ -61,8 +63,22 @@ class _TelaServicoFormState extends State<TelaServicoForm> {
     return null;
   }
 
+  /// Interpreta o preço digitado aceitando as três formas que o barbeiro
+  /// pode produzir: `1250.00` (teclado), `1250,00` (vírgula decimal) e
+  /// `1.250,00` — esta última é o que a lista exibe desde que a formatação
+  /// passou a usar separador de milhar, então é o que ele cola de volta no
+  /// campo ao editar. Sem tratar o ponto como milhar, `1.250,00` viraria
+  /// `1.250.00` e o parse falharia com "Preço inválido" sem dizer por quê.
+  static double? _parsePreco(String texto) {
+    final limpo = texto.trim();
+    if (limpo.contains(',')) {
+      return double.tryParse(limpo.replaceAll('.', '').replaceAll(',', '.'));
+    }
+    return double.tryParse(limpo);
+  }
+
   String? _validarPreco(String? valor) {
-    final preco = double.tryParse((valor ?? '').replaceAll(',', '.'));
+    final preco = _parsePreco(valor ?? '');
     if (preco == null || preco <= 0) {
       return 'Informe um preço maior que zero';
     }
@@ -86,7 +102,7 @@ class _TelaServicoFormState extends State<TelaServicoForm> {
     setState(() => _salvando = true);
 
     final nome = _nomeController.text.trim();
-    final preco = double.parse(_precoController.text.replaceAll(',', '.'));
+    final preco = _parsePreco(_precoController.text)!;
     final duracaoMinutos = int.parse(_duracaoController.text);
 
     final sucesso = await viewModel.salvar(

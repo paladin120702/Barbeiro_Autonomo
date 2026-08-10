@@ -71,7 +71,13 @@ ApiException _paraApiException(DioException error) {
   // Compor aqui — ponto único de construção — torna impossível uma tela
   // nova perder o detalhe por esquecimento.
   if (campos != null && campos.isNotEmpty) {
-    final detalhes = campos.entries
+    // Ordem alfabética por campo: o backend monta o LinkedHashMap a partir
+    // de `getFieldErrors()`, cuja ordem vem de um Set do Hibernate
+    // Validator — a mesma requisição inválida pode voltar com os campos em
+    // ordens diferentes. Ordenar aqui deixa a mensagem estável.
+    final entradas = campos.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final detalhes = entradas
         .map((entrada) => '${entrada.key} — ${entrada.value}')
         .join('; ');
     mensagem = '$mensagem: $detalhes';

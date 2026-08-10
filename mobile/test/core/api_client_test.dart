@@ -220,6 +220,38 @@ void main() {
       }
     });
 
+    test(
+        'os campos entram em ordem alfabética, não na ordem do corpo: '
+        'getFieldErrors() do backend vem de um Set, então a mesma '
+        'requisição inválida pode voltar com os campos trocados', () async {
+      final storage = FakeTokenStorage();
+      final adapter = _FakeAdapter(
+        statusCode: 400,
+        // Ordem deliberadamente invertida em relação à alfabética.
+        body: {
+          'erro': 'Dados inválidos',
+          'campos': {
+            'senha': 'não deve estar vazio',
+            'email': 'não deve estar vazio',
+          },
+        },
+      );
+      final dio = criarDio(storage, baseUrl: 'http://localhost')
+        ..httpClientAdapter = adapter;
+
+      try {
+        await dio.post('/api/v1/app/login');
+        fail('deveria ter lançado DioException');
+      } on DioException catch (e) {
+        final apiException = e.error! as ApiException;
+        expect(
+          apiException.mensagem,
+          'Dados inválidos: email — não deve estar vazio; '
+          'senha — não deve estar vazio',
+        );
+      }
+    });
+
     test('erro sem {campos: ...} deixa campos null e não altera a mensagem',
         () async {
       final storage = FakeTokenStorage();

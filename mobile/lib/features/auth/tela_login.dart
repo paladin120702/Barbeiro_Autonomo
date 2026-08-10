@@ -55,8 +55,11 @@ class _TelaLoginFormState extends State<_TelaLoginForm> {
   Future<void> _entrar(BuildContext context, LoginViewModel viewModel) async {
     if (!_formKey.currentState!.validate()) return;
 
+    // `trim()` no e-mail (não na senha, onde espaço pode ser intencional):
+    // o autocompletar do teclado Android costuma acrescentar um espaço à
+    // direita, que o backend rejeitaria com "E-mail ou senha inválidos".
     final sucesso = await viewModel.entrar(
-      _emailController.text,
+      _emailController.text.trim(),
       _senhaController.text,
     );
     if (!context.mounted) return;
@@ -93,10 +96,11 @@ class _TelaLoginFormState extends State<_TelaLoginForm> {
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(labelText: 'E-mail'),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
+                      final email = (value ?? '').trim();
+                      if (email.isEmpty) {
                         return 'Informe o e-mail';
                       }
-                      if (!_regexEmail.hasMatch(value)) {
+                      if (!_regexEmail.hasMatch(email)) {
                         return 'E-mail inválido';
                       }
                       return null;
