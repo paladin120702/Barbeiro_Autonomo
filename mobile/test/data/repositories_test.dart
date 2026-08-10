@@ -124,6 +124,47 @@ void main() {
       expect(await storage.ler(), 'token-xyz');
     });
 
+    test('200 sem a chave token vira ApiException (não TypeError cru) e não '
+        'salva nada no storage', () async {
+      final adapter = _FakeAdapter(
+        statusCode: 200,
+        body: {'nome': 'Barbeiro', 'slug': 'barbeiro'},
+      );
+      final storage = FakeTokenStorage();
+      final repo = AuthRepository(_dioComAdapter(adapter), storage);
+
+      await expectLater(
+        () => repo.login('a@a.com', 'senha123'),
+        throwsA(isA<ApiException>()),
+      );
+      expect(await storage.ler(), isNull);
+    });
+
+    test('200 com token de tipo inesperado vira ApiException', () async {
+      final adapter = _FakeAdapter(statusCode: 200, body: {'token': 12345});
+      final storage = FakeTokenStorage();
+      final repo = AuthRepository(_dioComAdapter(adapter), storage);
+
+      await expectLater(
+        () => repo.login('a@a.com', 'senha123'),
+        throwsA(isA<ApiException>()),
+      );
+      expect(await storage.ler(), isNull);
+    });
+
+    test('200 com token vazio vira ApiException (token vazio quebraria o '
+        'header Authorization sem sintoma claro)', () async {
+      final adapter = _FakeAdapter(statusCode: 200, body: {'token': ''});
+      final storage = FakeTokenStorage();
+      final repo = AuthRepository(_dioComAdapter(adapter), storage);
+
+      await expectLater(
+        () => repo.login('a@a.com', 'senha123'),
+        throwsA(isA<ApiException>()),
+      );
+      expect(await storage.ler(), isNull);
+    });
+
     test('logout limpa o storage', () async {
       final adapter = _FakeAdapter(statusCode: 200, body: {});
       final storage = FakeTokenStorage();
@@ -426,6 +467,29 @@ void main() {
       } on ApiException catch (e) {
         expect(e.statusCode, 404);
         expect(e.mensagem, 'Serviço não encontrado');
+      }
+    });
+
+    test('200 com corpo de tipo inesperado também vira ApiException: o cast '
+        'da resposta falha DEPOIS da cadeia de interceptors, então o '
+        'DioException chega aqui com error == null e vazaria cru', () async {
+      // Corpo que não é a lista esperada — o que um portal cativo ou proxy
+      // devolve ao interceptar a requisição com um 200 de HTML.
+      final adapter = _FakeAdapter(statusCode: 200, body: '<html></html>');
+      final storage = FakeTokenStorage();
+      final dio = criarDio(storage, baseUrl: 'http://localhost')
+        ..httpClientAdapter = adapter;
+      final repo = ServicoRepository(dio);
+
+      try {
+        await repo.listar();
+        fail('deveria ter lançado ApiException');
+      } on ApiException catch (e) {
+        expect(e.mensagem, 'Resposta inesperada do servidor. Tente novamente.');
+        // Medido, não deduzido: o DioException de falha de cast não carrega
+        // `response`, então não há status code a preservar mesmo tendo sido
+        // um 200 na rede.
+        expect(e.statusCode, isNull);
       }
     });
   });

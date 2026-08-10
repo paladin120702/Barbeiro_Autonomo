@@ -16,7 +16,16 @@ Future<T> tratarErros<T>(Future<T> Function() chamada) async {
     if (e.error is ApiException) {
       throw e.error! as ApiException;
     }
-    rethrow;
+    // Um DioException SEM ApiException embutido não passou pelo interceptor
+    // de `criarDio` — o caso real é a conversão da resposta falhando, que
+    // acontece depois da cadeia de interceptors: um 200 cujo corpo não é o
+    // tipo esperado (portal cativo/proxy devolvendo HTML) faz o cast para
+    // `Map<String, dynamic>` estourar com `e.error == null`. Deixar passar
+    // cru quebrava o app: os ViewModels capturam só `ApiException`.
+    throw ApiException(
+      statusCode: e.response?.statusCode,
+      mensagem: 'Resposta inesperada do servidor. Tente novamente.',
+    );
   }
 }
 
