@@ -34,7 +34,9 @@ void main() {
       final sucesso = await future;
 
       expect(sucesso, isTrue);
-      expect(viewModel.status, LoginStatus.sucesso);
+      // Volta a `inicial`, não fica preso em `carregando` — se ficasse, o
+      // botão continuaria desabilitado caso a navegação não acontecesse.
+      expect(viewModel.status, LoginStatus.inicial);
       expect(notificacoes, greaterThanOrEqualTo(2));
     },
   );

@@ -10,8 +10,6 @@ class _VmDeTeste extends BaseViewModel {
     chamadas++;
     notificarSeAtivo();
   }
-
-  bool get estaDescartado => descartado;
 }
 
 void main() {
@@ -38,6 +36,7 @@ void main() {
 
     expect(() => vm.notificar(), returnsNormally);
     expect(notificacoes, 0);
-    expect(vm.estaDescartado, isTrue);
+    // O método foi mesmo executado; o que não aconteceu foi a notificação.
+    expect(vm.chamadas, 1);
   });
 }

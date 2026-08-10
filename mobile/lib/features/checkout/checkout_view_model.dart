@@ -14,7 +14,12 @@ import '../../data/repositories/agendamento_repository.dart';
 /// ser limpo manualmente (como [CheckoutViewModel.confirmar] costumava
 /// exigir com um `limparErro()`), reabrindo espaço para o mesmo SnackBar
 /// reaparecer num rebuild sem uma nova tentativa ter falhado.
-enum CheckoutStatus { inicial, enviando, sucesso }
+///
+/// Pelo mesmo critério não existe `sucesso`: o sucesso volta pelo `true` de
+/// [CheckoutViewModel.confirmar], e a View faz `pop` em seguida. O único
+/// valor que a tela realmente lê é [CheckoutStatus.enviando], para
+/// desabilitar os botões.
+enum CheckoutStatus { inicial, enviando }
 
 /// ViewModel do checkout ("Finalizar e Receber"): confirma o pagamento de
 /// [agendamento] via [AgendamentoRepository.finalizar] (fluxo da seção 8 do
@@ -60,7 +65,10 @@ class CheckoutViewModel extends BaseViewModel {
       return false;
     }
 
-    status = CheckoutStatus.sucesso;
+    // Volta a `inicial` (e não a um `sucesso` que ninguém leria): se o `pop`
+    // não acontecer, os botões voltam a ficar habilitados em vez de
+    // congelados em "enviando".
+    status = CheckoutStatus.inicial;
     notificarSeAtivo();
     return true;
   }

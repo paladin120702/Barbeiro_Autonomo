@@ -57,7 +57,9 @@ void main() {
       final sucesso = await future;
 
       expect(sucesso, isTrue);
-      expect(viewModel.status, CheckoutStatus.sucesso);
+      // Volta a `inicial`, não fica preso em `enviando` — se ficasse, os
+      // botões continuariam desabilitados caso o `pop` não acontecesse.
+      expect(viewModel.status, CheckoutStatus.inicial);
       verify(repository.finalizar(7, FormaPagamento.pix)).called(1);
     },
   );
@@ -103,7 +105,7 @@ void main() {
 
     expect(segundaTentativa, isTrue);
     expect(viewModel.mensagemErro, isNull);
-    expect(viewModel.status, CheckoutStatus.sucesso);
+    expect(viewModel.status, CheckoutStatus.inicial);
     verify(repository.finalizar(7, FormaPagamento.dinheiro)).called(2);
   });
 

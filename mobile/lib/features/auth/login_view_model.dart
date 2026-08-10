@@ -3,7 +3,12 @@ import '../../core/errors/api_exception.dart';
 import '../../data/repositories/auth_repository.dart';
 
 /// Estado do formulário de login.
-enum LoginStatus { inicial, carregando, sucesso, erro }
+///
+/// Não existe um valor `sucesso`: o sucesso volta pelo `true` de
+/// [LoginViewModel.entrar], consumido uma única vez pela View logo após o
+/// `await`, que navega em seguida. Um valor no estado só para dizer "deu
+/// certo" ficaria sem leitor — foi o que aconteceu até esta limpeza.
+enum LoginStatus { inicial, carregando, erro }
 
 /// ViewModel da tela de login: autentica via [AuthRepository] e expõe o
 /// estado do formulário (carregando/sucesso/erro) para a View.
@@ -33,7 +38,9 @@ class LoginViewModel extends BaseViewModel {
       return false;
     }
 
-    status = LoginStatus.sucesso;
+    // Volta a `inicial` (e não a um `sucesso` que ninguém leria): o botão
+    // deixa de ficar em "entrando…" caso a navegação não aconteça.
+    status = LoginStatus.inicial;
     notificarSeAtivo();
     return true;
   }
