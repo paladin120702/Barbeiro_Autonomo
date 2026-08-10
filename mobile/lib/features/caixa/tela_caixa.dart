@@ -1,25 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/formatadores.dart';
 import '../../data/models/enums.dart';
 import '../../data/repositories/caixa_repository.dart';
 import 'caixa_view_model.dart';
-
-const _nomesMeses = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-];
 
 /// Aba "Caixa": totais recebidos por dia ou mês, com o detalhamento por
 /// forma de pagamento.
@@ -41,30 +26,10 @@ class TelaCaixa extends StatelessWidget {
 class _TelaCaixaConteudo extends StatelessWidget {
   const _TelaCaixaConteudo();
 
-  static final _formatoMoeda = NumberFormat.currency(
-    locale: 'pt_BR',
-    symbol: 'R\$',
-  );
-
-  String _rotuloForma(FormaPagamento forma) => switch (forma) {
-    FormaPagamento.pix => 'Pix',
-    FormaPagamento.dinheiro => 'Dinheiro',
-    FormaPagamento.debito => 'Débito',
-    FormaPagamento.credito => 'Crédito',
-  };
-
-  String _formatarDia(DateTime data) =>
-      '${data.day.toString().padLeft(2, '0')}/'
-      '${data.month.toString().padLeft(2, '0')}/'
-      '${data.year}';
-
-  String _formatarMes(DateTime data) =>
-      '${_nomesMeses[data.month - 1]}/${data.year}';
-
   String _formatarReferencia(CaixaViewModel viewModel) =>
       viewModel.periodo == PeriodoCaixa.dia
-      ? _formatarDia(viewModel.referencia)
-      : _formatarMes(viewModel.referencia);
+      ? formatarData(viewModel.referencia)
+      : formatarMesAno(viewModel.referencia);
 
   /// Abre o seletor de data. No período "mês", qualquer dia escolhido dentro
   /// do mês é reduzido para o 1º dia (a referência de [CaixaViewModel] no
@@ -167,7 +132,7 @@ class _TelaCaixaConteudo extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           children: [
             Text(
-              _formatoMoeda.format(caixa.total),
+              formatarPreco(caixa.total),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
@@ -189,10 +154,8 @@ class _TelaCaixaConteudo extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(_rotuloForma(forma)),
-                    Text(
-                      _formatoMoeda.format(caixa.porFormaPagamento[forma] ?? 0),
-                    ),
+                    Text(forma.rotuloExibicao),
+                    Text(formatarPreco(caixa.porFormaPagamento[forma] ?? 0)),
                   ],
                 ),
               ),

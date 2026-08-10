@@ -70,4 +70,17 @@ enum FormaPagamento {
         return 'CREDITO';
     }
   }
+
+  /// Rótulo de exibição em português, usado nas telas de checkout e caixa.
+  ///
+  /// Fica junto de [toApi]/[fromApi] em vez de em `core/formatadores.dart`:
+  /// é uma tradução de valores DESTE enum, não um formatador genérico de
+  /// tipo primitivo (preço/data/hora) — o mesmo padrão que já colocava a
+  /// conversão de/para API aqui.
+  String get rotuloExibicao => switch (this) {
+    FormaPagamento.pix => 'Pix',
+    FormaPagamento.dinheiro => 'Dinheiro',
+    FormaPagamento.debito => 'Débito',
+    FormaPagamento.credito => 'Crédito',
+  };
 }

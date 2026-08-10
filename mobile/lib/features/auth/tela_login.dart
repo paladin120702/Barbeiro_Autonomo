@@ -35,6 +35,12 @@ class _TelaLoginFormState extends State<_TelaLoginForm> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
 
+  // Espelha a validação `@Email` do backend (LoginRequest): sem isso, um
+  // e-mail mal formatado só é pego no 400 de validação do servidor, que
+  // hoje não indica qual campo falhou (ver ApiException.campos) — o
+  // barbeiro veria só "Dados inválidos" sem saber o que corrigir.
+  static final _regexEmail = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -86,9 +92,15 @@ class _TelaLoginFormState extends State<_TelaLoginForm> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(labelText: 'E-mail'),
-                    validator: (value) => (value == null || value.isEmpty)
-                        ? 'Informe o e-mail'
-                        : null,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Informe o e-mail';
+                      }
+                      if (!_regexEmail.hasMatch(value)) {
+                        return 'E-mail inválido';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

@@ -89,7 +89,7 @@ void main() {
       final dio = criarDio(storage, baseUrl: 'http://localhost')
         ..httpClientAdapter = adapter;
 
-      await dio.post('/api/v1/login');
+      await dio.post('/api/v1/app/login');
 
       expect(
         adapter.ultimaRequisicao?.headers.containsKey('Authorization'),
@@ -135,7 +135,7 @@ void main() {
       )..httpClientAdapter = adapter;
 
       await expectLater(
-        () => dio.post('/api/v1/login'),
+        () => dio.post('/api/v1/app/login'),
         throwsA(isA<DioException>()),
       );
 
@@ -181,6 +181,62 @@ void main() {
         final apiException = e.error! as ApiException;
         expect(apiException.statusCode, 500);
         expect(apiException.mensagem, 'Erro de conexão. Tente novamente.');
+      }
+    });
+
+    test(
+        '400 de validação com {campos: ...}: o detalhe por campo entra na '
+        'mensagem (senão o barbeiro só veria "Dados inválidos") e continua '
+        'disponível estruturado em campos', () async {
+      final storage = FakeTokenStorage();
+      final adapter = _FakeAdapter(
+        statusCode: 400,
+        body: {
+          'erro': 'Dados inválidos',
+          'campos': {
+            'email': 'deve ser um endereço de e-mail bem formado',
+            'senha': 'não deve estar vazio',
+          },
+        },
+      );
+      final dio = criarDio(storage, baseUrl: 'http://localhost')
+        ..httpClientAdapter = adapter;
+
+      try {
+        await dio.post('/api/v1/app/login');
+        fail('deveria ter lançado DioException');
+      } on DioException catch (e) {
+        final apiException = e.error! as ApiException;
+        expect(apiException.statusCode, 400);
+        expect(
+          apiException.mensagem,
+          'Dados inválidos: email — deve ser um endereço de e-mail bem '
+          'formado; senha — não deve estar vazio',
+        );
+        expect(apiException.campos, {
+          'email': 'deve ser um endereço de e-mail bem formado',
+          'senha': 'não deve estar vazio',
+        });
+      }
+    });
+
+    test('erro sem {campos: ...} deixa campos null e não altera a mensagem',
+        () async {
+      final storage = FakeTokenStorage();
+      final adapter = _FakeAdapter(
+        statusCode: 409,
+        body: {'erro': 'Horário já ocupado'},
+      );
+      final dio = criarDio(storage, baseUrl: 'http://localhost')
+        ..httpClientAdapter = adapter;
+
+      try {
+        await dio.post('/api/v1/app/agendamentos');
+        fail('deveria ter lançado DioException');
+      } on DioException catch (e) {
+        final apiException = e.error! as ApiException;
+        expect(apiException.mensagem, 'Horário já ocupado');
+        expect(apiException.campos, isNull);
       }
     });
   });

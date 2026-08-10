@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/formatadores.dart';
 import 'configuracao_view_model.dart';
 
 /// Formulário de criação de uma exceção de horário: date picker + switch
@@ -37,15 +38,6 @@ class _TelaExcecaoFormState extends State<TelaExcecaoForm> {
     _data = DateTime(hoje.year, hoje.month, hoje.day + 1);
   }
 
-  String _formatarHora(TimeOfDay hora) =>
-      '${hora.hour.toString().padLeft(2, '0')}:'
-      '${hora.minute.toString().padLeft(2, '0')}';
-
-  String _formatarData(DateTime data) =>
-      '${data.day.toString().padLeft(2, '0')}/'
-      '${data.month.toString().padLeft(2, '0')}/'
-      '${data.year}';
-
   Future<void> _escolherData(BuildContext context) async {
     final escolhida = await showDatePicker(
       context: context,
@@ -81,8 +73,8 @@ class _TelaExcecaoFormState extends State<TelaExcecaoForm> {
     final sucesso = await viewModel.salvarExcecao(
       data: _data,
       disponivel: _vouTrabalhar,
-      horaInicio: _vouTrabalhar ? _formatarHora(_horaInicio) : null,
-      horaFim: _vouTrabalhar ? _formatarHora(_horaFim) : null,
+      horaInicio: _vouTrabalhar ? formatarHoraDoDia(_horaInicio) : null,
+      horaFim: _vouTrabalhar ? formatarHoraDoDia(_horaFim) : null,
     );
 
     if (!context.mounted) return;
@@ -113,7 +105,7 @@ class _TelaExcecaoFormState extends State<TelaExcecaoForm> {
               contentPadding: EdgeInsets.zero,
               title: const Text('Data'),
               trailing: Text(
-                _formatarData(_data),
+                formatarData(_data),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               onTap: () => _escolherData(context),
@@ -129,7 +121,7 @@ class _TelaExcecaoFormState extends State<TelaExcecaoForm> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Início'),
                 trailing: Text(
-                  _formatarHora(_horaInicio),
+                  formatarHoraDoDia(_horaInicio),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 onTap: () => _escolherHoraInicio(context),
@@ -138,7 +130,7 @@ class _TelaExcecaoFormState extends State<TelaExcecaoForm> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Fim'),
                 trailing: Text(
-                  _formatarHora(_horaFim),
+                  formatarHoraDoDia(_horaFim),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 onTap: () => _escolherHoraFim(context),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/formatadores.dart';
 import '../../data/models/servico.dart';
 import '../../data/repositories/servico_repository.dart';
 import 'servicos_view_model.dart';
@@ -30,9 +31,6 @@ class TelaServicos extends StatelessWidget {
 
 class _TelaServicosConteudo extends StatelessWidget {
   const _TelaServicosConteudo();
-
-  String _formatarPreco(double preco) =>
-      'R\$ ${preco.toStringAsFixed(2).replaceAll('.', ',')}';
 
   void _abrirFormulario(
     BuildContext context,
@@ -123,7 +121,7 @@ class _TelaServicosConteudo extends StatelessWidget {
               key: ValueKey(servico.id),
               title: Text(servico.nome),
               subtitle: Text(
-                '${_formatarPreco(servico.preco)} · '
+                '${formatarPreco(servico.preco)} · '
                 '${servico.duracaoMinutos} min',
               ),
               onTap: () =>

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:barbearia_app/core/errors/api_exception.dart';
 import 'package:barbearia_app/data/models/servico.dart';
 import 'package:barbearia_app/data/repositories/servico_repository.dart';
@@ -166,6 +168,45 @@ void main() {
       verify(repository.listar()).called(1);
     },
   );
+
+  test('guard de sequenciamento: resposta de uma chamada antiga de carregar() '
+      'que chega depois de uma mais nova não sobrescreve o estado (ex.: '
+      'excluir dois serviços antes da 1ª resposta voltar)', () async {
+    // Cada chamada a listar recebe seu próprio Completer, na ordem em que
+    // a chamada foi disparada — permite resolver as respostas fora de
+    // ordem para simular a corrida.
+    final respostas = <Completer<List<Servico>>>[];
+    when(repository.listar()).thenAnswer((_) {
+      final completer = Completer<List<Servico>>();
+      respostas.add(completer);
+      return completer.future;
+    });
+
+    // Geração 1: disparada pelo construtor.
+    final viewModel = ServicosViewModel(repository);
+    // Geração 2 (antiga) e geração 3 (nova), disparadas antes de qualquer
+    // resposta chegar — como excluir dois serviços em sequência rápida.
+    final chamadaAntiga = viewModel.carregar();
+    final chamadaNova = viewModel.carregar();
+    expect(respostas, hasLength(3));
+
+    // A resposta da chamada NOVA (geração 3) chega primeiro...
+    respostas[2].complete([servico]);
+    await chamadaNova;
+    expect(viewModel.servicos, [servico]);
+
+    // ...e só depois a resposta da chamada ANTIGA (geração 2) chega — não
+    // deve sobrescrever o estado já assumido pela mais nova.
+    respostas[1].complete([]);
+    await chamadaAntiga;
+
+    expect(viewModel.servicos, [servico]);
+    expect(viewModel.status, ServicosStatus.sucesso);
+
+    // Geração 1 (do construtor) nunca respondeu; resolve para não deixar
+    // o Completer pendente no fim do teste.
+    respostas[0].complete([]);
+  });
 
   test('toda transição de carregar notifica listeners', () async {
     when(repository.listar()).thenAnswer((_) async => [servico]);

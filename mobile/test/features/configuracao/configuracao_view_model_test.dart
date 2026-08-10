@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:barbearia_app/core/errors/api_exception.dart';
 import 'package:barbearia_app/data/models/excecao_horario.dart';
 import 'package:barbearia_app/data/models/horario_funcionamento.dart';
@@ -41,13 +43,14 @@ void main() {
       final viewModel = ConfiguracaoViewModel(repository);
       expect(viewModel.status, ConfiguracaoStatus.carregando);
 
+      // O construtor já dispara 1 carregar(); este await é o 2º.
       await viewModel.carregar();
 
       expect(viewModel.status, ConfiguracaoStatus.sucesso);
       expect(viewModel.horarios, [horario]);
       expect(viewModel.excecoes, [excecao]);
-      verify(repository.listarHorarios()).called(greaterThan(0));
-      verify(repository.listarExcecoes()).called(greaterThan(0));
+      verify(repository.listarHorarios()).called(2);
+      verify(repository.listarExcecoes()).called(2);
     },
   );
 
@@ -320,6 +323,61 @@ void main() {
       expect(viewModel.status, ConfiguracaoStatus.sucesso);
       expect(viewModel.excecoes, [excecao]);
       verify(repository.listarExcecoes()).called(1);
+    },
+  );
+
+  test(
+    'guard de sequenciamento: resposta de uma chamada antiga de carregar() '
+    'que chega depois de uma mais nova não sobrescreve o estado (ex.: '
+    'excluir um horário e uma exceção antes da 1ª resposta voltar)',
+    () async {
+      // Cada chamada a listarHorarios/listarExcecoes recebe seu próprio
+      // Completer, na ordem em que a chamada foi disparada — permite
+      // resolver as respostas fora de ordem para simular a corrida.
+      final respostasHorarios = <Completer<List<HorarioFuncionamento>>>[];
+      final respostasExcecoes = <Completer<List<ExcecaoHorario>>>[];
+      when(repository.listarHorarios()).thenAnswer((_) {
+        final completer = Completer<List<HorarioFuncionamento>>();
+        respostasHorarios.add(completer);
+        return completer.future;
+      });
+      when(repository.listarExcecoes()).thenAnswer((_) {
+        final completer = Completer<List<ExcecaoHorario>>();
+        respostasExcecoes.add(completer);
+        return completer.future;
+      });
+
+      // Geração 1: disparada pelo construtor.
+      final viewModel = ConfiguracaoViewModel(repository);
+      // Geração 2 (antiga) e geração 3 (nova), disparadas antes de qualquer
+      // resposta chegar — como excluir um horário e uma exceção em
+      // sequência rápida.
+      final chamadaAntiga = viewModel.carregar();
+      final chamadaNova = viewModel.carregar();
+      expect(respostasHorarios, hasLength(3));
+      expect(respostasExcecoes, hasLength(3));
+
+      // A resposta da chamada NOVA (geração 3) chega primeiro...
+      respostasHorarios[2].complete([horario]);
+      respostasExcecoes[2].complete([excecao]);
+      await chamadaNova;
+      expect(viewModel.horarios, [horario]);
+      expect(viewModel.excecoes, [excecao]);
+
+      // ...e só depois a resposta da chamada ANTIGA (geração 2) chega — não
+      // deve sobrescrever o estado já assumido pela mais nova.
+      respostasHorarios[1].complete([]);
+      respostasExcecoes[1].complete([]);
+      await chamadaAntiga;
+
+      expect(viewModel.horarios, [horario]);
+      expect(viewModel.excecoes, [excecao]);
+      expect(viewModel.status, ConfiguracaoStatus.sucesso);
+
+      // Geração 1 (do construtor) nunca respondeu; resolve para não deixar
+      // os Completers pendentes no fim do teste.
+      respostasHorarios[0].complete([]);
+      respostasExcecoes[0].complete([]);
     },
   );
 }

@@ -33,23 +33,46 @@ class ConfiguracaoViewModel extends BaseViewModel {
   /// `status` permanece o que já estava (ver documentação da classe).
   String? mensagemErro;
 
+  /// Conta as chamadas de [carregar] para descartar respostas antigas que
+  /// cheguem depois de uma mais nova. As quatro ações de escrita chamam
+  /// [carregar] ao final, então duas ações disparadas em sequência rápida
+  /// (ex.: excluir dois horários antes da 1ª resposta voltar) recarregam as
+  /// listas duas vezes em paralelo — sem isso, a resposta que chegasse por
+  /// último venceria, podendo trazer de volta um registro já excluído se a
+  /// resposta mais antiga chegar depois da mais nova.
+  int _geracao = 0;
+
   /// Busca horários e exceções em paralelo.
   Future<void> carregar() async {
+    final geracao = ++_geracao;
     status = ConfiguracaoStatus.carregando;
     mensagemErro = null;
     notificarSeAtivo();
 
+    List<HorarioFuncionamento>? resultadoHorarios;
+    List<ExcecaoHorario>? resultadoExcecoes;
+    String? erro;
     try {
       final resultados = await Future.wait([
         _repository.listarHorarios(),
         _repository.listarExcecoes(),
       ]);
-      horarios = resultados[0] as List<HorarioFuncionamento>;
-      excecoes = resultados[1] as List<ExcecaoHorario>;
-      status = ConfiguracaoStatus.sucesso;
+      resultadoHorarios = resultados[0] as List<HorarioFuncionamento>;
+      resultadoExcecoes = resultados[1] as List<ExcecaoHorario>;
     } on ApiException catch (e) {
-      mensagemErro = e.mensagem;
+      erro = e.mensagem;
+    }
+
+    // Uma chamada mais nova já assumiu o estado; esta resposta está velha.
+    if (geracao != _geracao) return;
+
+    if (erro != null) {
+      mensagemErro = erro;
       status = ConfiguracaoStatus.erro;
+    } else {
+      horarios = resultadoHorarios!;
+      excecoes = resultadoExcecoes!;
+      status = ConfiguracaoStatus.sucesso;
     }
     notificarSeAtivo();
   }

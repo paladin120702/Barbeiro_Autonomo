@@ -24,18 +24,39 @@ class ServicosViewModel extends BaseViewModel {
   /// carregada por causa de uma ação pontual em UM serviço).
   String? mensagemErro;
 
+  /// Conta as chamadas de [carregar] para descartar respostas antigas que
+  /// cheguem depois de uma mais nova. [salvar]/[excluir] chamam [carregar]
+  /// ao final, então duas ações disparadas em sequência rápida (ex.: excluir
+  /// dois serviços antes da 1ª resposta voltar) recarregam a lista duas
+  /// vezes em paralelo — sem isso, a resposta que chegasse por último
+  /// venceria, podendo trazer de volta um serviço já excluído se a resposta
+  /// mais antiga chegar depois da mais nova.
+  int _geracao = 0;
+
   /// Busca a lista de serviços.
   Future<void> carregar() async {
+    final geracao = ++_geracao;
     status = ServicosStatus.carregando;
     mensagemErro = null;
     notificarSeAtivo();
 
+    List<Servico>? resultado;
+    String? erro;
     try {
-      servicos = await _repository.listar();
-      status = ServicosStatus.sucesso;
+      resultado = await _repository.listar();
     } on ApiException catch (e) {
-      mensagemErro = e.mensagem;
+      erro = e.mensagem;
+    }
+
+    // Uma chamada mais nova já assumiu o estado; esta resposta está velha.
+    if (geracao != _geracao) return;
+
+    if (erro != null) {
+      mensagemErro = erro;
       status = ServicosStatus.erro;
+    } else {
+      servicos = resultado!;
+      status = ServicosStatus.sucesso;
     }
     notificarSeAtivo();
   }

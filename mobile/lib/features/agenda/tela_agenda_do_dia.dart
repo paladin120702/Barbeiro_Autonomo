@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/formatadores.dart';
 import '../../data/models/agendamento.dart';
 import '../../data/models/enums.dart';
 import '../../data/repositories/agendamento_repository.dart';
@@ -26,11 +27,6 @@ class TelaAgendaDoDia extends StatelessWidget {
 
 class _TelaAgendaDoDiaConteudo extends StatelessWidget {
   const _TelaAgendaDoDiaConteudo();
-
-  String _formatarDia(DateTime data) =>
-      '${data.day.toString().padLeft(2, '0')}/'
-      '${data.month.toString().padLeft(2, '0')}/'
-      '${data.year}';
 
   Future<void> _escolherData(BuildContext context, AgendaViewModel vm) async {
     final novaData = await showDatePicker(
@@ -104,7 +100,7 @@ class _TelaAgendaDoDiaConteudo extends StatelessWidget {
                   TextButton(
                     onPressed: () => _escolherData(context, viewModel),
                     child: Text(
-                      _formatarDia(viewModel.diaSelecionado),
+                      formatarData(viewModel.diaSelecionado),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),

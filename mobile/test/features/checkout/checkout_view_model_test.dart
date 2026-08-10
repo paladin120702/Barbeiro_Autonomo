@@ -81,25 +81,30 @@ void main() {
     expect(viewModel.formaSelecionada, FormaPagamento.dinheiro);
   });
 
-  test('depois de uma falha, trocar a forma de pagamento não deixa o sinal '
-      'de erro "grudado" (o mesmo SnackBar não deveria reaparecer): como '
-      'confirmar() retorna o resultado uma única vez, não existe sinal no '
-      'estado que sobreviva ao consumo pela tela', () async {
-    when(repository.finalizar(any, any)).thenAnswer(
-      (_) async => throw const ApiException(mensagem: 'Falha ao finalizar'),
-    );
+  test('retry após falha: 2ª confirmar() com sucesso zera mensagemErro e '
+      'retorna true (não fica "grudado" no erro da 1ª tentativa)', () async {
+    var chamada = 0;
+    when(repository.finalizar(any, any)).thenAnswer((_) async {
+      chamada++;
+      if (chamada == 1) {
+        throw const ApiException(mensagem: 'Falha ao finalizar');
+      }
+    });
 
     final viewModel = CheckoutViewModel(repository, agendamento);
     viewModel.selecionarForma(FormaPagamento.dinheiro);
+
     final primeiraTentativa = await viewModel.confirmar();
     expect(primeiraTentativa, isFalse);
+    expect(viewModel.mensagemErro, 'Falha ao finalizar');
 
-    // Barbeiro toca em outra forma de pagamento pra tentar de novo — isso só
-    // chama selecionarForma(), sem repetir confirmar().
-    viewModel.selecionarForma(FormaPagamento.pix);
+    // Barbeiro tenta de novo com a mesma forma, sem precisar reselecionar.
+    final segundaTentativa = await viewModel.confirmar();
 
-    // Nenhum estado "erro" sobrevive: status não tem mais esse valor.
-    expect(viewModel.status, isNot(CheckoutStatus.enviando));
+    expect(segundaTentativa, isTrue);
+    expect(viewModel.mensagemErro, isNull);
+    expect(viewModel.status, CheckoutStatus.sucesso);
+    verify(repository.finalizar(7, FormaPagamento.dinheiro)).called(2);
   });
 
   test(

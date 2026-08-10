@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/formatadores.dart';
 import '../../data/models/agendamento.dart';
 import '../../data/models/enums.dart';
 import '../../data/repositories/agendamento_repository.dart';
@@ -30,16 +31,6 @@ class TelaCheckout extends StatelessWidget {
 
 class _TelaCheckoutConteudo extends StatelessWidget {
   const _TelaCheckoutConteudo();
-
-  String _formatarPreco(double preco) =>
-      'R\$ ${preco.toStringAsFixed(2).replaceAll('.', ',')}';
-
-  String _rotuloForma(FormaPagamento forma) => switch (forma) {
-    FormaPagamento.pix => 'Pix',
-    FormaPagamento.dinheiro => 'Dinheiro',
-    FormaPagamento.debito => 'Débito',
-    FormaPagamento.credito => 'Crédito',
-  };
 
   /// Confirma via [viewModel] e, depois do `await`, faz `pop(true)` em caso
   /// de sucesso ou mostra o erro num SnackBar. Rodar isso aqui — e não
@@ -85,7 +76,7 @@ class _TelaCheckoutConteudo extends StatelessWidget {
                 Text(agendamento.servicoNome),
                 const SizedBox(height: 4),
                 Text(
-                  _formatarPreco(agendamento.servicoPreco),
+                  formatarPreco(agendamento.servicoPreco),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 24),
@@ -98,14 +89,14 @@ class _TelaCheckoutConteudo extends StatelessWidget {
                   children: [
                     _BotaoForma(
                       forma: FormaPagamento.pix,
-                      rotulo: _rotuloForma(FormaPagamento.pix),
+                      rotulo: FormaPagamento.pix.rotuloExibicao,
                       viewModel: viewModel,
                       enviando: enviando,
                     ),
                     const SizedBox(width: 8),
                     _BotaoForma(
                       forma: FormaPagamento.dinheiro,
-                      rotulo: _rotuloForma(FormaPagamento.dinheiro),
+                      rotulo: FormaPagamento.dinheiro.rotuloExibicao,
                       viewModel: viewModel,
                       enviando: enviando,
                     ),
@@ -116,14 +107,14 @@ class _TelaCheckoutConteudo extends StatelessWidget {
                   children: [
                     _BotaoForma(
                       forma: FormaPagamento.debito,
-                      rotulo: _rotuloForma(FormaPagamento.debito),
+                      rotulo: FormaPagamento.debito.rotuloExibicao,
                       viewModel: viewModel,
                       enviando: enviando,
                     ),
                     const SizedBox(width: 8),
                     _BotaoForma(
                       forma: FormaPagamento.credito,
-                      rotulo: _rotuloForma(FormaPagamento.credito),
+                      rotulo: FormaPagamento.credito.rotuloExibicao,
                       viewModel: viewModel,
                       enviando: enviando,
                     ),

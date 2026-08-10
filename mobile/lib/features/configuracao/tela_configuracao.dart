@@ -1,22 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/formatadores.dart';
 import '../../data/models/excecao_horario.dart';
 import '../../data/models/horario_funcionamento.dart';
 import '../../data/repositories/horario_repository.dart';
 import 'configuracao_view_model.dart';
 import 'tela_excecao_form.dart';
 import 'tela_horario_form.dart';
-
-const _nomesDiasSemana = [
-  'Domingo',
-  'Segunda-feira',
-  'Terça-feira',
-  'Quarta-feira',
-  'Quinta-feira',
-  'Sexta-feira',
-  'Sábado',
-];
 
 /// Aba "Configuração": horário de funcionamento semanal (dom…sáb) e exceções
 /// futuras (folgas/horários especiais).
@@ -42,11 +33,6 @@ class TelaConfiguracao extends StatelessWidget {
 
 class _TelaConfiguracaoConteudo extends StatelessWidget {
   const _TelaConfiguracaoConteudo();
-
-  String _formatarData(DateTime data) =>
-      '${data.day.toString().padLeft(2, '0')}/'
-      '${data.month.toString().padLeft(2, '0')}/'
-      '${data.year}';
 
   void _abrirFormularioHorario(
     BuildContext context,
@@ -91,7 +77,7 @@ class _TelaConfiguracaoConteudo extends StatelessWidget {
       builder: (context) => AlertDialog(
         title: const Text('Excluir horário'),
         content: Text(
-          'Excluir o horário de ${_nomesDiasSemana[horario.diaSemana]}?',
+          'Excluir o horário de ${nomeDiaSemana(horario.diaSemana)}?',
         ),
         actions: [
           TextButton(
@@ -127,7 +113,7 @@ class _TelaConfiguracaoConteudo extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Excluir exceção'),
-        content: Text('Excluir a exceção de ${_formatarData(excecao.data)}?'),
+        content: Text('Excluir a exceção de ${formatarData(excecao.data)}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -242,19 +228,26 @@ class _TelaConfiguracaoConteudo extends StatelessWidget {
     ConfiguracaoViewModel viewModel,
     int diaSemana,
   ) {
+    // Casa por diaSemana independente de `ativo`: um registro inativo (só
+    // possível via seed/DB direto — o app nunca escreve `ativo=false`) ainda
+    // precisa aparecer aqui, senão vira órfão inalcançável pela UI — tocar
+    // no dia abriria "novo horário" (POST) e criaria um segundo registro
+    // para o mesmo dia, já que o backend não valida unicidade por
+    // diaSemana. Ver decisão B2 no relatório de backlog.
     final horario = viewModel.horarios.cast<HorarioFuncionamento?>().firstWhere(
-      (h) => h != null && h.diaSemana == diaSemana && h.ativo,
+      (h) => h != null && h.diaSemana == diaSemana,
       orElse: () => null,
     );
+    final fechado = horario == null || !horario.ativo;
 
     return ListTile(
       key: ValueKey('dia-$diaSemana'),
-      title: Text(_nomesDiasSemana[diaSemana]),
+      title: Text(nomeDiaSemana(diaSemana)),
       subtitle: Text(
-        horario == null
-            ? 'Fechado'
-            : '${horario.horaInicio} – ${horario.horaFim}',
+        fechado ? 'Fechado' : '${horario.horaInicio} – ${horario.horaFim}',
       ),
+      // Com um `horario` (ativo ou não) o tap abre EDIÇÃO daquele registro;
+      // só cria um novo quando não existe nenhum registro para o dia.
       onTap: () => _abrirFormularioHorario(
         context,
         viewModel,
@@ -282,7 +275,7 @@ class _TelaConfiguracaoConteudo extends StatelessWidget {
 
     return ListTile(
       key: ValueKey('excecao-${excecao.id}'),
-      title: Text(_formatarData(excecao.data)),
+      title: Text(formatarData(excecao.data)),
       subtitle: Text(subtitulo),
       trailing: IconButton(
         icon: const Icon(Icons.delete_outline),

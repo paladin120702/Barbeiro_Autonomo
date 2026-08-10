@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/formatadores.dart';
 import '../../data/models/agendamento.dart';
 import '../../data/models/enums.dart';
 
@@ -55,13 +56,6 @@ class AgendamentoTile extends StatelessWidget {
     }
   }
 
-  String _formatarHora(DateTime data) =>
-      '${data.hour.toString().padLeft(2, '0')}:'
-      '${data.minute.toString().padLeft(2, '0')}';
-
-  String _formatarPreco(double preco) =>
-      'R\$ ${preco.toStringAsFixed(2).replaceAll('.', ',')}';
-
   @override
   Widget build(BuildContext context) {
     final agendado = agendamento.status == StatusAgendamento.agendado;
@@ -76,7 +70,7 @@ class AgendamentoTile extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  _formatarHora(agendamento.dataHoraInicio),
+                  formatarHora(agendamento.dataHoraInicio),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(width: 12),
@@ -90,8 +84,10 @@ class AgendamentoTile extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            Text('${agendamento.servicoNome} · '
-                '${_formatarPreco(agendamento.servicoPreco)}'),
+            Text(
+              '${agendamento.servicoNome} · '
+              '${formatarPreco(agendamento.servicoPreco)}',
+            ),
             if (agendado) ...[
               const SizedBox(height: 12),
               Row(

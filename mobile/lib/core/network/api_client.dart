@@ -59,5 +59,26 @@ ApiException _paraApiException(DioException error) {
   if (data is Map && data['erro'] is String) {
     mensagem = data['erro'] as String;
   }
-  return ApiException(statusCode: statusCode, mensagem: mensagem);
+  Map<String, String>? campos;
+  if (data is Map && data['campos'] is Map) {
+    campos = (data['campos'] as Map).map(
+      (chave, valor) => MapEntry(chave.toString(), valor.toString()),
+    );
+  }
+  // O detalhe por campo entra na própria [mensagem] em vez de depender de
+  // cada tela lembrar de ler [campos]: sem isso, o 400 de validação do
+  // backend chega ao barbeiro como "Dados inválidos" sem dizer o quê.
+  // Compor aqui — ponto único de construção — torna impossível uma tela
+  // nova perder o detalhe por esquecimento.
+  if (campos != null && campos.isNotEmpty) {
+    final detalhes = campos.entries
+        .map((entrada) => '${entrada.key} — ${entrada.value}')
+        .join('; ');
+    mensagem = '$mensagem: $detalhes';
+  }
+  return ApiException(
+    statusCode: statusCode,
+    mensagem: mensagem,
+    campos: campos,
+  );
 }

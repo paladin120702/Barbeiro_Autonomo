@@ -1,18 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/formatadores.dart';
 import '../../data/models/horario_funcionamento.dart';
 import 'configuracao_view_model.dart';
-
-const _nomesDiasSemana = [
-  'Domingo',
-  'Segunda-feira',
-  'Terça-feira',
-  'Quarta-feira',
-  'Quinta-feira',
-  'Sexta-feira',
-  'Sábado',
-];
 
 /// Formulário de criação/edição de um horário de funcionamento: dropdown de
 /// dia da semana (dom…sáb) + seleção de hora de início/fim via
@@ -59,10 +50,6 @@ class _TelaHorarioFormState extends State<TelaHorarioForm> {
     return TimeOfDay(hour: int.parse(partes[0]), minute: int.parse(partes[1]));
   }
 
-  String _formatarHora(TimeOfDay hora) =>
-      '${hora.hour.toString().padLeft(2, '0')}:'
-      '${hora.minute.toString().padLeft(2, '0')}';
-
   Future<void> _escolherHoraInicio(BuildContext context) async {
     final escolhida = await showTimePicker(
       context: context,
@@ -88,8 +75,8 @@ class _TelaHorarioFormState extends State<TelaHorarioForm> {
     final sucesso = await viewModel.salvarHorario(
       id: widget.horario?.id,
       diaSemana: _diaSemana,
-      horaInicio: _formatarHora(_horaInicio),
-      horaFim: _formatarHora(_horaFim),
+      horaInicio: formatarHoraDoDia(_horaInicio),
+      horaFim: formatarHoraDoDia(_horaFim),
       ativo: widget.horario?.ativo ?? true,
     );
 
@@ -123,10 +110,7 @@ class _TelaHorarioFormState extends State<TelaHorarioForm> {
               decoration: const InputDecoration(labelText: 'Dia da semana'),
               items: [
                 for (var dia = 0; dia < 7; dia++)
-                  DropdownMenuItem(
-                    value: dia,
-                    child: Text(_nomesDiasSemana[dia]),
-                  ),
+                  DropdownMenuItem(value: dia, child: Text(nomeDiaSemana(dia))),
               ],
               onChanged: (dia) {
                 if (dia != null) setState(() => _diaSemana = dia);
@@ -137,7 +121,7 @@ class _TelaHorarioFormState extends State<TelaHorarioForm> {
               contentPadding: EdgeInsets.zero,
               title: const Text('Início'),
               trailing: Text(
-                _formatarHora(_horaInicio),
+                formatarHoraDoDia(_horaInicio),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               onTap: () => _escolherHoraInicio(context),
@@ -146,7 +130,7 @@ class _TelaHorarioFormState extends State<TelaHorarioForm> {
               contentPadding: EdgeInsets.zero,
               title: const Text('Fim'),
               trailing: Text(
-                _formatarHora(_horaFim),
+                formatarHoraDoDia(_horaFim),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               onTap: () => _escolherHoraFim(context),
