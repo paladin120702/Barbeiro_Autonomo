@@ -5,4 +5,4 @@ build/
 .vscode/
 *.iml
 .env
-graphify-out/cache/
+graphify-out/
