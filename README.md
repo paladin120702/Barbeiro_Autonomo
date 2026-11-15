@@ -4,6 +4,32 @@ SaaS de agendamento para barbeiro individual: backend Spring Boot com vitrine p�
 
 Este é o **único README do repositório** — os três módulos estão documentados aqui, cada um na sua seção. Não há README por módulo, de propósito: um só arquivo não diverge do outro.
 
+
+## O que este projeto demonstra
+
+Projeto de portfólio que conecta **Desenvolvimento Júnior** e **Suporte de Sistemas Júnior** ao mesmo fluxo de negócio: agendamento, atendimento e controle de caixa de uma barbearia.
+
+- **Desenvolvimento:** Java/Spring Boot, React/TypeScript e Flutter, com autenticação JWT, migrations e restrições de integridade no PostgreSQL.
+- **Análise funcional:** entendimento de disponibilidade de horários, conflito de agendamentos, cancelamento e finalização de atendimentos.
+- **Investigação e qualidade:** respostas de erro padronizadas, logs no backend e testes de integração, concorrência, ViewModels e interface.
+- **Documentação:** separação entre vitrine pública e gestão autenticada, configuração por ambiente e convenções para evitar regressões no aplicativo.
+
+Evidências: [`AgendamentoService`](backend/src/main/java/com/seusistema/barbearia/agendamento/AgendamentoService.java), [`GlobalExceptionHandler`](backend/src/main/java/com/seusistema/barbearia/common/exception/GlobalExceptionHandler.java), [`testes do backend`](backend/src/test), [`web`](web/src) e [`mobile`](mobile/lib).
+
+## Diagnóstico no ambiente local
+
+| Sintoma | Conferência sugerida |
+|---|---|
+| Vitrine mostra barbearia não encontrada | Conferir o slug no endereço; a raiz `/` não identifica um barbeiro. |
+| Backend não conecta ao banco | Conferir `docker compose ps`, `DB_URL`, porta e migrations; consultar o log de inicialização. |
+| App não alcança a API | Conferir `API_URL`; no emulador Android, `10.0.2.2` representa o host. Um dispositivo físico precisa de um endereço acessível na rede. |
+| `401` no app de gestão | Conferir login, validade do token e configuração do ambiente, sem compartilhar o token. |
+| `409` ao agendar | Reconsultar a disponibilidade: o horário pode ter sido reservado por outra requisição. |
+| `400` com `campos` ou erro de parâmetro | Conferir os dados do formulário e o formato dos parâmetros antes de reenviar. |
+| `500` com mensagem genérica | Reproduzir em ambiente de desenvolvimento e correlacionar horário/rota com o log do backend. |
+
+Para documentar uma ocorrência, registrar módulo, ambiente, sequência de ações, horário e comportamento esperado/observado. Utilizar dados fictícios ao reproduzir o atendimento.
+
 ## Estrutura
 
 | Pasta | O que é | Stack |
