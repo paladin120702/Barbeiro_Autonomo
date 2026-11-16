@@ -7,7 +7,7 @@ Este é o **único README do repositório** — os três módulos estão documen
 
 ## O que este projeto demonstra
 
-Projeto de portfólio que conecta **Desenvolvimento Júnior** e **Suporte de Sistemas Júnior** ao mesmo fluxo de negócio: agendamento, atendimento e controle de caixa de uma barbearia.
+Projeto de portfólio que conecta **Desenvolvimento Fullstack** e **Suporte de Sistemas Júnior** ao mesmo fluxo de negócio: agendamento, atendimento e controle de caixa de uma barbearia.
 
 - **Desenvolvimento:** Java/Spring Boot, React/TypeScript e Flutter, com autenticação JWT, migrations e restrições de integridade no PostgreSQL.
 - **Análise funcional:** entendimento de disponibilidade de horários, conflito de agendamentos, cancelamento e finalização de atendimentos.
